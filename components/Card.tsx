@@ -7,60 +7,114 @@ import Link from "next/link";
 import type { Ticket } from "@/types/ticket";
 import { TICKET_TYPE } from "@/types/ticket";
 import { Separator } from "@radix-ui/react-separator";
+import { Label } from "./Label";
+import { PriorityIcon } from "./PriorityIcon";
+import { BORDER_STYLES } from "@/lib/styles";
 
 interface CardProps {
   ticket: Ticket;
   isPreview?: boolean;
 }
 
-function CardContent({ ticket, isDragging = false, isPreview = false }: { ticket: Ticket; isDragging?: boolean; isPreview?: boolean }) {
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function CardContent({
+  ticket,
+  isDragging = false,
+  isPreview = false,
+}: {
+  ticket: Ticket;
+  isDragging?: boolean;
+  isPreview?: boolean;
+}) {
   return (
     <Link
       href={`/tickets/${ticket.id}`}
-      style={{ cursor: isPreview ? "grabbing" : (isDragging ? "grabbing" : "default") }}
+      style={{
+        cursor: isPreview ? "grabbing" : isDragging ? "grabbing" : "default",
+      }}
       className={clsx(
         "block w-full",
         "bg-white",
-        "border border-stone-200 hover:border-stone-300 rounded-md hover:shadow-xs",
-        "p-4",
+        BORDER_STYLES.interactive,
+        "rounded-md hover:shadow-xs",
+        "pl-4 pr-4 py-4 pt-2",
         "transition-all duration-150",
-        "select-none",
+        "select-none"
       )}
     >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div
+            className="inline-flex"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <PriorityIcon
+              priority={ticket.priority}
+              ticket={ticket}
+              interactive
+            />
+          </div>
+          <span className="text-xs font-medium opacity-50">TICKET-{ticket.id}</span>
+        </div>
+        {ticket.assignee && (
+          <div
+            className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium"
+            title={`Assigned to ${ticket.assignee.name}`}
+          >
+            {getInitials(ticket.assignee.name)}
+          </div>
+        )}
+      </div>
+
+      <Separator className="bg-stone-200 h-px mb-3 -mx-4" />
+
+      {/* Title */}
       <h3 className="font-medium mb-2 text-sm leading-snug">
         {ticket.title}
       </h3>
 
+      {/* Description */}
       {ticket.description && (
-        <p className="text-sm opacity-70 line-clamp-2">
-          {ticket.description}
-        </p>
+        <p className="text-sm opacity-70 line-clamp-2 mb-3">{ticket.description}</p>
       )}
 
-      <Separator className="bg-stone-200 h-px my-4 -mx-4" />
+      <Separator className="bg-stone-200 h-px my-3 -mx-4" />
 
-      <div className="flex items-center gap-2 text-sm opacity-70">
-        <span>Requested by {ticket.requester.name}</span>
+      {/* Requester info */}
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <div className="text-sm font-medium mb-1">Requester</div>
+          <div className="opacity-70">{ticket.requester.name}</div>
+        </div>
+        <div>
+          <div className="text-sm font-medium mb-1">For</div>
+          <div className="opacity-70">{ticket.requestFor.name}</div>
+        </div>
       </div>
 
-      {ticket.requestFor.email !== ticket.requester.email && (
-        <div className="flex items-center mt-1 text-sm opacity-70">
-          <span>Requested for {ticket.requestFor.name}</span>
-        </div>
-      )}
-
+      {/* Labels */}
       {ticket.labels && ticket.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div
+          className="flex flex-wrap gap-1.5 mt-3"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           {ticket.labels.map((label) => (
-            <div key={label.id} className="rounded-sm border border-stone-200 flex items-center px-2 py-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: label.color }} />
-              <span
-                key={label.id}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-              >
-                {label.name}
-              </span>
-            </div>
+            <Label key={label.id} label={label} ticket={ticket} interactive />
           ))}
         </div>
       )}

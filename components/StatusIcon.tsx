@@ -1,8 +1,3 @@
-/**
- * Status icon component
- * Renders status indicators like Linear with radial progress
- */
-
 import { ProgressRing } from "./ProgressRing";
 
 interface StatusIconProps {
@@ -11,27 +6,32 @@ interface StatusIconProps {
   size?: "sm" | "md";
 }
 
+const NEW = "new";
+const IN_PROGRESS = "in-progress";
+const WAITING_VENDOR = "waiting-vendor";
+const WAITING_REQUESTER = "waiting-requester";
+const DONE = "done";
+
 export function StatusIcon({ statusId, color, size = "sm" }: StatusIconProps) {
-  // Determine fill percentage and style based on status
   const getStatusStyle = () => {
     switch (statusId) {
-      case "new":
+      case NEW:
         return {
           fill: 0,
           dashed: true,
         };
-      case "in-progress":
+      case IN_PROGRESS:
         return {
           fill: 50,
           dashed: false,
         };
-      case "waiting-vendor":
-      case "waiting-requester":
+      case WAITING_VENDOR:
+      case WAITING_REQUESTER:
         return {
           fill: 50,
           dashed: false,
         };
-      case "done":
+      case DONE:
         return {
           fill: 100,
           dashed: false,

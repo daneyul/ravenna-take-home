@@ -5,6 +5,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { motion } from "motion/react";
 import type { Status, Ticket } from "@/types/ticket";
 import { COLUMN_TYPE } from "@/types/ticket";
 import { Card } from "./Card";
@@ -14,9 +15,10 @@ interface ColumnProps {
   status: Status;
   tickets: Ticket[];
   isOver?: boolean;
+  columnIndex: number;
 }
 
-export function Column({ status, tickets, isOver = false }: ColumnProps) {
+export function Column({ status, tickets, isOver = false, columnIndex }: ColumnProps) {
   const { setNodeRef } = useDroppable({
     id: status.id,
     data: {
@@ -45,8 +47,19 @@ export function Column({ status, tickets, isOver = false }: ColumnProps) {
           items={tickets.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
         >
-          {tickets.map((ticket) => (
-            <Card key={ticket.id} ticket={ticket} />
+          {tickets.map((ticket, index) => (
+            <motion.div
+              key={ticket.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.2,
+                delay: columnIndex * 0.1 + 0.15 + index * 0.05,
+                ease: "easeOut",
+              }}
+            >
+              <Card ticket={ticket} />
+            </motion.div>
           ))}
         </SortableContext>
 

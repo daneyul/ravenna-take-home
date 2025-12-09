@@ -10,6 +10,8 @@ export interface Label {
   color: string;
 }
 
+export type Priority = "severe" | "high" | "medium" | "low" | "none";
+
 export interface Ticket {
   id: string;
   title: string;
@@ -19,6 +21,7 @@ export interface Ticket {
   requestFor: Requester;
   assignee?: Requester;
   labels: Label[];
+  priority: Priority;
   order: number;
   createdAt: Date;
 }

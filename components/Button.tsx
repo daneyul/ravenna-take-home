@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { BUTTON_STYLES } from "@/lib/styles";
 
 export default function Button({
   children,
@@ -15,13 +16,12 @@ export default function Button({
     <button
       className={clsx(
         "flex items-center gap-2 px-4 py-2",
-        "rounded-sm border border-stone-200",
+        "rounded-sm",
         "transition-all duration-150",
         "text-sm font-medium",
         "cursor-pointer",
-        "hover:border-stone-300",
         "bg-white",
-        "shadow-xs",
+        BUTTON_STYLES.base,
         className
       )}
       onClick={onClick}

@@ -6,7 +6,7 @@ import NavItem from "./NavItem";
 export function Sidebar() {
 	return (
 		<aside
-			className="w-64 h-screen flex flex-col p-4 gap-8"
+			className="w-64 h-screen hidden md:flex flex-col p-4 gap-8"
 		>
 			<div className="flex items-center gap-3">
 				<div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">

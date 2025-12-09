@@ -3,7 +3,7 @@
  * This data is used to populate the initial state
  */
 
-import { Status, Ticket, Label } from "@/types/ticket";
+import { Status, Ticket, Label, Requester } from "@/types/ticket";
 
 export const MOCK_LABELS: Label[] = [
   {
@@ -81,6 +81,25 @@ export const MOCK_STATUSES: Status[] = [
   },
 ];
 
+export const MOCK_ASSIGNEES: Requester[] = [
+  {
+    name: "Alex Thompson",
+    email: "alex.thompson@company.com",
+  },
+  {
+    name: "David Kim",
+    email: "david.kim@company.com",
+  },
+  {
+    name: "Lisa Anderson",
+    email: "lisa.anderson@company.com",
+  },
+  {
+    name: "Ryan Martinez",
+    email: "ryan.martinez@company.com",
+  },
+];
+
 export const MOCK_TICKETS: Ticket[] = [
   {
     id: "1",
@@ -100,6 +119,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "alex.thompson@company.com",
     },
     labels: [MOCK_LABELS[2], MOCK_LABELS[7]], // Finance, Software
+    priority: "high",
     order: 0,
     createdAt: new Date("2025-12-01T09:00:00"),
   },
@@ -121,6 +141,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "david.kim@company.com",
     },
     labels: [MOCK_LABELS[4], MOCK_LABELS[6]], // Engineering, Hardware
+    priority: "medium",
     order: 0,
     createdAt: new Date("2025-11-28T14:30:00"),
   },
@@ -142,6 +163,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "alex.thompson@company.com",
     },
     labels: [MOCK_LABELS[0]], // IT
+    priority: "severe",
     order: 1,
     createdAt: new Date("2025-12-03T11:15:00"),
   },
@@ -163,6 +185,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "lisa.anderson@company.com",
     },
     labels: [MOCK_LABELS[3], MOCK_LABELS[7]], // Design, Software
+    priority: "high",
     order: 0,
     createdAt: new Date("2025-11-25T10:00:00"),
   },
@@ -184,6 +207,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "alex.thompson@company.com",
     },
     labels: [MOCK_LABELS[0]], // IT
+    priority: "low",
     order: 0,
     createdAt: new Date("2025-11-30T16:45:00"),
   },
@@ -205,6 +229,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "ryan.martinez@company.com",
     },
     labels: [MOCK_LABELS[5], MOCK_LABELS[6]], // Operations, Hardware
+    priority: "medium",
     order: 0,
     createdAt: new Date("2025-11-20T09:30:00"),
   },
@@ -226,6 +251,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "david.kim@company.com",
     },
     labels: [MOCK_LABELS[0], MOCK_LABELS[4]], // IT, Engineering
+    priority: "severe",
     order: 1,
     createdAt: new Date("2025-12-02T13:20:00"),
   },
@@ -247,6 +273,7 @@ export const MOCK_TICKETS: Ticket[] = [
       email: "lisa.anderson@company.com",
     },
     labels: [MOCK_LABELS[6]], // Hardware
+    priority: "low",
     order: 2,
     createdAt: new Date("2025-12-04T08:00:00"),
   },

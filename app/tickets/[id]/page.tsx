@@ -5,7 +5,7 @@
 
 "use client";
 
-import { TicketDetailView } from "@/components/TicketDetailView";
+import { TicketDetailView } from "@/components/tickets/TicketDetailView";
 import { useAtomValue } from "jotai";
 import { ticketsAtom } from "@/atoms/tickets";
 import { useParams, useRouter } from "next/navigation";

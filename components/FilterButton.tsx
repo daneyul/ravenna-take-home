@@ -1,13 +1,25 @@
 import * as Popover from "@radix-ui/react-popover";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDownIcon, MixerHorizontalIcon, Cross2Icon } from "@radix-ui/react-icons";
-import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { ChevronDownIcon, MixerHorizontalIcon, Cross2Icon, ArrowLeftIcon } from "@radix-ui/react-icons";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { statusesAtom } from "@/atoms/tickets";
+import { statusesAtom, ticketFiltersAtom, labelsAtom, addLabelAtom } from "@/atoms/tickets";
 import { getStatusColor } from "@/utils/status";
 import { ProgressRing } from "./ProgressRing";
+import { BORDER_STYLES, BUTTON_STYLES } from "@/lib/styles";
+
+const LABEL_COLORS = [
+  "#3b82f6", // blue
+  "#10b981", // green
+  "#f59e0b", // amber
+  "#ec4899", // pink
+  "#8b5cf6", // purple
+  "#ef4444", // red
+  "#06b6d4", // cyan
+  "#6366f1", // indigo
+];
 
 interface SelectItemWrapperProps {
   value: string;
@@ -55,19 +67,84 @@ function SelectItemWrapper({ value, label, color }: SelectItemWrapperProps) {
 
 export function FilterButton() {
   const statuses = useAtomValue(statusesAtom);
-  const [selectedValue, setSelectedValue] = useState("all");
+  const labels = useAtomValue(labelsAtom);
+  const addLabel = useSetAtom(addLabelAtom);
+  const [filters, setFilters] = useAtom(ticketFiltersAtom);
   const [open, setOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
-  const selectedColor = getStatusColor(selectedValue, statuses);
+  const [isFocused, setIsFocused] = useState(false);
+  const [labelInputValue, setLabelInputValue] = useState("");
+  const [labelDropdownOpen, setLabelDropdownOpen] = useState(false);
+  const [creatingLabelName, setCreatingLabelName] = useState<string | null>(null);
+  const selectedColor = getStatusColor(filters.status || "all", statuses);
+
+  const placeholders = [
+    "Search tickets...",
+    "Search by label...",
+    `Search by assignee...`,
+    `Search by status...`,
+    "Search by description..."
+  ];
+
+  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [placeholders.length]);
+
+  const filteredLabels = labels.filter((label) =>
+    label.name.toLowerCase().includes(labelInputValue.toLowerCase())
+  );
+
+  const selectedLabels = labels.filter((label) =>
+    filters.labels?.includes(label.id)
+  );
+
+  const handleLabelSelect = (labelId: string) => {
+    const currentLabels = filters.labels || [];
+    const isSelected = currentLabels.includes(labelId);
+    const newLabels = isSelected
+      ? currentLabels.filter((id) => id !== labelId)
+      : [...currentLabels, labelId];
+    setFilters({
+      ...filters,
+      labels: newLabels.length > 0 ? newLabels : undefined,
+    });
+  };
+
+  const handleRemoveLabel = (labelId: string) => {
+    const currentLabels = filters.labels || [];
+    const newLabels = currentLabels.filter((id) => id !== labelId);
+    setFilters({
+      ...filters,
+      labels: newLabels.length > 0 ? newLabels : undefined,
+    });
+  };
+
+  const handleCreateLabel = (color: string) => {
+    if (!creatingLabelName) return;
+
+    const newLabelId = addLabel({
+      name: creatingLabelName,
+      color,
+    });
+
+    handleLabelSelect(newLabelId);
+    setCreatingLabelName(null);
+    setLabelInputValue("");
+  };
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
           className={clsx(
-            "p-2.5 rounded border cursor-pointer",
-            "bg-white border-stone-200 shadow-xs",
-            "hover:border-stone-300",
+            "p-2.5 rounded cursor-pointer bg-white",
+            BUTTON_STYLES.base,
             "transition-all duration-150 active:scale-97"
           )}
           aria-label="Filter tickets"
@@ -87,7 +164,7 @@ export function FilterButton() {
               ease: "easeOut",
             }}
             style={{ transformOrigin: "top center" }}
-            className="bg-white border border-stone-200 rounded-md shadow-lg p-4 w-64 z-50 relative"
+            className={clsx("bg-white rounded-md shadow-xs p-4 w-64 z-50 relative", BORDER_STYLES.base)}
           >
             <Popover.Close asChild>
               <button
@@ -104,24 +181,49 @@ export function FilterButton() {
             <div className="flex flex-col gap-3">
               <div>
                 <label className="text-sm  block mb-1">Search</label>
-                <input
-                  type="text"
-                  placeholder="Search tickets..."
-                  className="w-full px-3 py-2 border border-stone-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={filters.search || ""}
+                    onChange={(e) =>
+                      setFilters({ ...filters, search: e.target.value })
+                    }
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+                  />
+                  {!filters.search && !isFocused && (
+                    <div className="absolute inset-0 px-3 py-2 pointer-events-none overflow-hidden">
+                      <AnimatePresence mode="popLayout">
+                        <motion.span
+                          key={currentPlaceholderIndex}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 0.5 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          className="text-sm block"
+                        >
+                          {placeholders[currentPlaceholderIndex]}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-sm  block mb-1">Status</label>
                 <Select.Root
-                  value={selectedValue}
-                  onValueChange={setSelectedValue}
+                  value={filters.status || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, status: value === "all" ? undefined : value })
+                  }
                   open={selectOpen}
                   onOpenChange={setSelectOpen}
                 >
-                  <Select.Trigger className="w-full px-3 py-2 border border-stone-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 flex items-center justify-between">
+                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-md text-sm flex items-center justify-between", BORDER_STYLES.input)}>
                     <div className="flex items-center gap-2">
-                      {selectedColor && selectedValue !== "all" && (() => {
-                        const statusId = selectedValue === "waiting-for-vendor" ? "waiting-vendor" : selectedValue === "waiting-for-requester" ? "waiting-requester" : selectedValue;
+                      {selectedColor && filters.status && filters.status !== "all" && (() => {
+                        const statusId = filters.status === "waiting-for-vendor" ? "waiting-vendor" : filters.status === "waiting-for-requester" ? "waiting-requester" : filters.status;
                         const progressStyle = getStatusProgressStyle(statusId);
                         return (
                           <ProgressRing
@@ -147,7 +249,7 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className="bg-white border border-stone-200 rounded-md shadow-lg min-w-(--radix-select-trigger-width)] z-50"
+                      className={clsx("bg-white rounded-md shadow-xs min-w-(--radix-select-trigger-width)] z-50", BORDER_STYLES.base)}
                     >
                       <Select.Viewport className="p-1">
                         <SelectItemWrapper value="all" label="All statuses" />
@@ -183,6 +285,135 @@ export function FilterButton() {
                     </Select.Content>
                   </Select.Portal>
                 </Select.Root>
+              </div>
+              <div>
+                <label className="text-sm block mb-1">Labels</label>
+                {selectedLabels.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {selectedLabels.map((label) => (
+                      <div
+                        key={label.id}
+                        className="px-2 py-1 rounded-sm text-xs font-medium border border-stone-300 flex items-center gap-1.5"
+                        style={{
+                          backgroundColor: `${label.color}15`,
+                          color: label.color,
+                        }}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        {label.name}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLabel(label.id)}
+                          className="ml-0.5 hover:opacity-70"
+                        >
+                          <Cross2Icon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Type to search labels..."
+                    value={labelInputValue}
+                    onChange={(e) => setLabelInputValue(e.target.value)}
+                    onFocus={() => setLabelDropdownOpen(true)}
+                    onBlur={(e) => {
+                      // Don't close if clicking inside the dropdown
+                      if (!e.relatedTarget || !e.currentTarget.parentElement?.contains(e.relatedTarget as Node)) {
+                        setTimeout(() => {
+                          setLabelDropdownOpen(false);
+                          setCreatingLabelName(null);
+                        }, 200);
+                      }
+                    }}
+                    className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+                  />
+                  {labelDropdownOpen && (
+                    <div
+                      className={clsx("absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-xs max-h-48 overflow-y-auto z-50", BORDER_STYLES.base)}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      {creatingLabelName ? (
+                        <div className="p-3 relative">
+                          <button
+                            type="button"
+                            onClick={() => setCreatingLabelName(null)}
+                            className="absolute top-2 left-2 p-1 hover:bg-stone-100 rounded transition-colors duration-150 z-10"
+                            aria-label="Back to labels"
+                          >
+                            <ArrowLeftIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <div className="text-xs opacity-70 mb-2 text-center">
+                            Choose a color for "{creatingLabelName}"
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {LABEL_COLORS.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => handleCreateLabel(color)}
+                                className="w-8 h-8 rounded-full transition-transform duration-150 hover:scale-110"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {filteredLabels.length > 0 ? (
+                            filteredLabels.map((label) => {
+                              const isSelected = filters.labels?.includes(label.id);
+                              return (
+                                <button
+                                  key={label.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleLabelSelect(label.id);
+                                    setLabelInputValue("");
+                                  }}
+                                  className={clsx(
+                                    "w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-stone-100 transition-colors duration-150",
+                                    isSelected && "bg-stone-50"
+                                  )}
+                                >
+                                  <span
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: label.color }}
+                                  />
+                                  <span>{label.name}</span>
+                                  {isSelected && (
+                                    <span className="ml-auto text-xs opacity-50">✓</span>
+                                  )}
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <div className="px-3 py-2 text-sm opacity-50">
+                              No labels found
+                            </div>
+                          )}
+                          {labelInputValue && (
+                            <button
+                              type="button"
+                              onClick={() => setCreatingLabelName(labelInputValue)}
+                              className="w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-stone-100 transition-colors duration-150 border-t border-stone-200"
+                            >
+                              <span className="opacity-50">Create label</span>
+                              <span className="ml-auto text-xs font-medium">
+                                "{labelInputValue}"
+                              </span>
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

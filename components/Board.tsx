@@ -12,7 +12,8 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import {
   statusesAtom,
   ticketsByStatusAtom,
@@ -29,6 +30,11 @@ export function Board() {
   const reorderTickets = useSetAtom(reorderTicketsAtom);
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const dragSensors = useSensors(
     useSensor(PointerSensor, {
@@ -93,6 +99,28 @@ export function Board() {
     }
   };
 
+  if (!isMounted) {
+    return (
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-x-auto overflow-y-auto">
+          <div className="flex gap-4 p-6 min-h-full">
+            {statuses.map((status) => {
+              const tickets = ticketsByStatus.get(status.id) || [];
+              return (
+                <div key={status.id} className="shrink-0 w-80 flex flex-col opacity-0">
+                  <div className="flex items-center gap-2 mb-4 px-1">
+                    <h2 className="font-medium text-sm">{status.name}</h2>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="shrink-0 w-2" aria-hidden="true" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DndContext
       sensors={dragSensors}
@@ -104,11 +132,22 @@ export function Board() {
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-x-auto overflow-y-auto">
           <div className="flex gap-4 p-6 min-h-full">
-            {statuses.map((status) => {
+            {statuses.map((status, columnIndex) => {
               const tickets = ticketsByStatus.get(status.id) || [];
               const isOver = overId === status.id || tickets.some(t => t.id === overId);
               return (
-                <Column key={status.id} status={status} tickets={tickets} isOver={isOver} />
+                <motion.div
+                  key={status.id}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.2,
+                    delay: columnIndex * 0.1,
+                    ease: "easeOut",
+                  }}
+                >
+                  <Column status={status} tickets={tickets} isOver={isOver} columnIndex={columnIndex} />
+                </motion.div>
               );
             })}
             {/* spacer to ensure padding after last column when scrolling */}

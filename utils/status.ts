@@ -1,6 +1,6 @@
 import type { Status } from "@/types/ticket";
 
-function mapValueToStatusId(value: string): string {
+export function mapValueToStatusId(value: string): string {
   if (value === "waiting-for-vendor") {
     return "waiting-vendor";
   }
