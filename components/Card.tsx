@@ -69,7 +69,13 @@ function CardContent({
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="inline-flex">
+          <div
+            className="inline-flex"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <PriorityIcon priority={ticket.priority} ticket={ticket} interactive />
           </div>
           <span className="text-xs font-medium opacity-50">TICKET-{ticket.id}</span>
@@ -166,7 +172,13 @@ function CardContent({
 
       {/* Labels */}
       {ticket.labels && ticket.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div
+          className="flex flex-wrap gap-1.5 mt-3"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           {ticket.labels.map((label) => (
             <Label key={label.id} label={label} ticket={ticket} interactive />
           ))}

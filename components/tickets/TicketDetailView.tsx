@@ -160,7 +160,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-6 py-4 border-b border-stone-200">
+      <header className="flex items-center gap-4 px-6 py-3 border-b border-stone-200">
         <button
           type="button"
           onClick={() => router.push("/tickets")}
@@ -172,12 +172,36 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
         >
           <ArrowLeftIcon className="w-4 h-4 opacity-70 group-hover:-translate-x-[25%] transition-transform duration-150" />
         </button>
-        <span className="text-sm font-medium">Ticket {ticket.id}</span>
+        <span className="font-medium">Ticket {ticket.id}</span>
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-8 pb-16">
-          <div className="flex items-center gap-2 mb-6">
+        <motion.div
+          className="max-w-3xl mx-auto px-6 py-8 pb-16"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.05,
+              },
+            },
+          }}
+        >
+          <motion.div
+            className="flex items-center gap-2 mb-6"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.3, ease: "easeOut" },
+              },
+            }}
+          >
             <PriorityIcon
               priority={ticket.priority}
               size="lg"
@@ -245,9 +269,19 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 </Popover.Content>
               </Popover.Portal>
             </Popover.Root>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-stone-200">
+          <motion.div
+            className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-stone-200"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.3, ease: "easeOut" },
+              },
+            }}
+          >
             <div>
               <DetailLabel>Status</DetailLabel>
               <StatusDropdown
@@ -287,9 +321,19 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 type="email"
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <motion.div
+            className="grid grid-cols-2 gap-6 mb-6"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.3, ease: "easeOut" },
+              },
+            }}
+          >
             <div>
               <DetailLabel>Created At</DetailLabel>
               <div className="text-sm opacity-70">
@@ -316,9 +360,19 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 <span>Subject: Issue</span>
               </button>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="mb-8">
+          <motion.div
+            className="mb-8"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.3, ease: "easeOut" },
+              },
+            }}
+          >
             <label htmlFor="description" className="text-sm block mb-3 font-medium">
               Description
             </label>
@@ -333,9 +387,18 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 "transition-all duration-150"
               )}
             />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.3, ease: "easeOut" },
+              },
+            }}
+          >
             <DetailLabel>Labels</DetailLabel>
             <div className="flex flex-wrap gap-1.5">
               {ticket.labels.map((label) => (
@@ -398,8 +461,8 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 </Popover.Portal>
               </Popover.Root>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
