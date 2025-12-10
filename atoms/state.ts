@@ -40,7 +40,6 @@ export const statusesAtom = atom<Status[]>(MOCK_STATUSES);
 export const labelsAtom = atom<Label[]>(MOCK_LABELS);
 export const assigneesAtom = atom<Requester[]>(MOCK_ASSIGNEES);
 
-// Derived atom - unique requesters from all tickets
 export const requestersAtom = atom((get) => {
   const tickets = get(ticketsAtom);
   const requestersMap = new Map<string, Requester>();
@@ -52,6 +51,5 @@ export const requestersAtom = atom((get) => {
   return Array.from(requestersMap.values());
 });
 
-// Sort state - stores which columns are sorted and direction
 export type SortDirection = "asc" | "desc" | null;
 export const columnSortAtom = atom<Record<string, SortDirection>>({});

@@ -35,6 +35,7 @@ export function Board() {
   const [overId, setOverId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  // not 100% sure about the consequences of this just yet
   useEffect(() => {
     setIsMounted(true);
   }, []);

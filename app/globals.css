@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/**
- * Font definitions for denim-trial family
- */
 @font-face {
   font-family: "denim-trial";
   src: url("/fonts/Denim-TRIAL-Regular.woff2") format("woff2");

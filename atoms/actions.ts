@@ -2,10 +2,6 @@ import { atom } from "jotai";
 import type { Label, Ticket } from "@/types/ticket";
 import { labelsAtom, statusesAtom, ticketsAtom } from "./state";
 
-/**
- * Mutation atoms - actions that modify state
- */
-
 export const updateTicketStatusAtom = atom(
   null,
   (get, set, { ticketId, newStatus }: { ticketId: string; newStatus: string }) => {

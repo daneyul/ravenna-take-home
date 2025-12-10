@@ -1,8 +1,3 @@
-/**
- * Mock data for the ITSM ticketing system
- * This data is used to populate the initial state
- */
-
 import type { Label, Requester, Status, Ticket } from "@/types/ticket";
 
 export const MOCK_LABELS: Label[] = [

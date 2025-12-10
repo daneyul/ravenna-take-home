@@ -253,7 +253,6 @@ export const updateTicketGroupAtom = atom(
         if (t.id === ticketId) {
           return updatedTicket;
         }
-        // Get this ticket's group value
         let tGroupValue: string;
         switch (groupBy) {
           case "status":
@@ -275,12 +274,12 @@ export const updateTicketGroupAtom = atom(
         if (tGroupValue === groupValue) {
           // Adjust orders for other tickets in the same group
           if (oldOrder < newOrder) {
-            // Moving down: decrement order for tickets in between
+            // Moving down
             if (t.order > oldOrder && t.order <= newOrder) {
               return { ...t, order: t.order - 1 };
             }
           } else {
-            // Moving up: increment order for tickets in between
+            // Moving up
             if (t.order >= newOrder && t.order < oldOrder) {
               return { ...t, order: t.order + 1 };
             }
@@ -289,13 +288,11 @@ export const updateTicketGroupAtom = atom(
         return t;
       });
     } else {
-      // Moving between groups
       updatedTickets = updatedTickets.map((t) => {
         if (t.id === ticketId) {
           return updatedTicket;
         }
 
-        // Get this ticket's group value
         let tGroupValue: string;
         switch (groupBy) {
           case "status":

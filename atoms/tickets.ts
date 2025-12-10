@@ -121,7 +121,6 @@ export const groupColumnsAtom = atom((get) => {
     }
 
     case "label":
-      // Add all labels
       labels.forEach((label, index) => {
         columns.push({
           id: label.id,
@@ -130,7 +129,6 @@ export const groupColumnsAtom = atom((get) => {
           order: index,
         });
       });
-      // Add "No Labels" column
       columns.push({
         id: "no-labels",
         name: "No Labels",
@@ -148,7 +146,6 @@ export const groupColumnsAtom = atom((get) => {
   }
 });
 
-// Group tickets based on current grouping mode
 export const ticketsByGroupAtom = atom((get) => {
   const tickets = get(filteredTicketsAtom);
   const groupBy = get(groupByAtom);
@@ -156,12 +153,10 @@ export const ticketsByGroupAtom = atom((get) => {
 
   const grouped = new Map<string, Ticket[]>();
 
-  // Initialize empty arrays for each column
   columns.forEach((column) => {
     grouped.set(column.id, []);
   });
 
-  // Group tickets
   tickets.forEach((ticket) => {
     let groupKey: string;
 
@@ -179,7 +174,6 @@ export const ticketsByGroupAtom = atom((get) => {
         break;
 
       case "label":
-        // Use first label, or "no-labels" if empty
         groupKey = ticket.labels.length > 0 ? ticket.labels[0].id : "no-labels";
         break;
 
@@ -192,7 +186,6 @@ export const ticketsByGroupAtom = atom((get) => {
     grouped.set(groupKey, groupTickets);
   });
 
-  // Sort tickets within each group by priority, then by order
   const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
   grouped.forEach((tickets) => {
     tickets.sort((a, b) => {
@@ -221,7 +214,6 @@ export const ticketsByStatusAtom = atom((get) => {
     grouped.set(ticket.status, statusTickets);
   });
 
-  // Sort tickets within each status by priority (severe > high > medium > low > none), then by order
   const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
   grouped.forEach((tickets) => {
     tickets.sort((a, b) => {
@@ -272,7 +264,7 @@ export const deleteTicketAtom = atom(null, (get, set, ticketId: string) => {
   set(ticketsAtom, filteredTickets);
 });
 
-// Reorder tickets within or between columns
+// this is most likely gonna be ripped out because we have actual sorting by priority now
 export const reorderTicketsAtom = atom(
   null,
   (
