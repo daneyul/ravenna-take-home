@@ -1,21 +1,24 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CaretDownIcon, CaretUpIcon, PersonIcon } from "@radix-ui/react-icons";
+import clsx from "clsx";
+import { useAtom, useAtomValue } from "jotai";
 import { motion } from "motion/react";
-import { useAtomValue, useAtom } from "jotai";
-import type { Ticket, Priority } from "@/types/ticket";
+import {
+  columnSortAtom,
+  type GroupColumn,
+  groupByAtom,
+  type SortDirection,
+} from "@/atoms";
+import { BUTTON_STYLES } from "@/lib/styles";
+import type { Priority, Ticket } from "@/types/ticket";
 import { COLUMN_TYPE } from "@/types/ticket";
-import { groupByAtom, type GroupColumn } from "@/atoms/tickets";
-import { columnSortAtom, type SortDirection } from "@/atoms";
 import { sortTicketsByPriority } from "@/utils/sorting";
 import { Card } from "./Card";
-import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
-import { CaretUpIcon, CaretDownIcon, PersonIcon } from "@radix-ui/react-icons";
+import { StatusIcon } from "./StatusIcon";
 
 interface ColumnProps {
   column: GroupColumn;
@@ -45,37 +48,37 @@ function ColumnHeader({
       {groupBy === "priority" && (
         <PriorityIcon priority={column.id as Priority} size="sm" />
       )}
-      {groupBy === "assignee" && (
-        column.id === "unassigned" ? (
+      {groupBy === "assignee" &&
+        (column.id === "unassigned" ? (
           <div className="w-4 h-4 border border-stone-300 rounded-full" />
         ) : (
           <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center">
             <PersonIcon className="w-3 h-3 opacity-70" />
           </div>
-        )
-      )}
-      {groupBy === "label" && (
-        column.id === "no-labels" ? (
+        ))}
+      {groupBy === "label" &&
+        (column.id === "no-labels" ? (
           <div className="w-3 h-3 border border-stone-300 rounded-sm" />
         ) : (
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: column.color }}
           />
-        )
-      )}
-      <h2 className="font-medium text-sm">{column.name}<sup className="text-xs opacity-70 ml-1">{ticketCount}</sup></h2>
+        ))}
+      <h2 className="font-medium text-sm">
+        {column.name}
+        <sup className="text-xs opacity-70 ml-1">{ticketCount}</sup>
+      </h2>
       <button
         type="button"
         onClick={onSortClick}
-        className="ml-auto w-6 h-6 flex items-center justify-center rounded-sm hover:bg-stone-100 transition-colors duration-150 cursor-pointer border border-stone-200 hover:border-stone-300 bg-white shadow-xs"
+        className={clsx(
+          "ml-auto w-6 h-6 flex items-center justify-center rounded-sm hover:bg-stone-100 transition-colors duration-150 cursor-pointer bg-white",
+          BUTTON_STYLES.base
+        )}
         aria-label="Sort by priority"
       >
-        {sortDirection === "desc" ? (
-          <CaretDownIcon />
-        ) : (
-          <CaretUpIcon />
-        )}
+        {sortDirection === "desc" ? <CaretDownIcon /> : <CaretUpIcon />}
       </button>
     </div>
   );

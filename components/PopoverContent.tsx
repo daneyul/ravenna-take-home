@@ -1,7 +1,7 @@
-import * as Popover from "@radix-ui/react-popover";
-import { motion } from "motion/react";
-import { clsx } from "clsx";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import * as Popover from "@radix-ui/react-popover";
+import { clsx } from "clsx";
+import { motion } from "motion/react";
 import { BORDER_STYLES } from "@/lib/styles";
 
 interface PopoverContentProps {

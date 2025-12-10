@@ -10,12 +10,8 @@ export function mapValueToStatusId(value: string): string {
   return value;
 }
 
-export function getStatusColor(
-  value: string,
-  statuses: Status[]
-): string | undefined {
+export function getStatusColor(value: string, statuses: Status[]): string | undefined {
   if (value === "all") return undefined;
   const statusId = mapValueToStatusId(value);
   return statuses.find((s) => s.id === statusId)?.color;
 }
-

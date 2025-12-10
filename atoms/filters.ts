@@ -1,7 +1,7 @@
 import { atom } from "jotai";
-import { TicketFilters } from "@/types/ticket";
-import { ticketsAtom } from "./state";
+import type { TicketFilters } from "@/types/ticket";
 import { mapValueToStatusId } from "@/utils/status";
+import { ticketsAtom } from "./state";
 
 export const ticketFiltersAtom = atom<TicketFilters>({
   search: "",
@@ -25,9 +25,7 @@ export const filteredTicketsAtom = atom((get) => {
         ticket.title.toLowerCase().includes(searchLower) ||
         ticket.description?.toLowerCase().includes(searchLower) ||
         ticket.requester.name.toLowerCase().includes(searchLower) ||
-        ticket.labels.some((label) =>
-          label.name.toLowerCase().includes(searchLower)
-        )
+        ticket.labels.some((label) => label.name.toLowerCase().includes(searchLower))
     );
   }
 
@@ -45,15 +43,11 @@ export const filteredTicketsAtom = atom((get) => {
   }
 
   if (filters.assignee) {
-    filtered = filtered.filter(
-      (ticket) => ticket.assignee?.email === filters.assignee
-    );
+    filtered = filtered.filter((ticket) => ticket.assignee?.email === filters.assignee);
   }
 
   if (filters.requester) {
-    filtered = filtered.filter(
-      (ticket) => ticket.requester.email === filters.requester
-    );
+    filtered = filtered.filter((ticket) => ticket.requester.email === filters.requester);
   }
 
   if (filters.requestFor) {

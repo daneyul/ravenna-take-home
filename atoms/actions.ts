@@ -1,6 +1,6 @@
 import { atom } from "jotai";
-import { Ticket, Label, Priority } from "@/types/ticket";
-import { ticketsAtom, statusesAtom, labelsAtom } from "./state";
+import type { Label, Ticket } from "@/types/ticket";
+import { labelsAtom, statusesAtom, ticketsAtom } from "./state";
 
 /**
  * Mutation atoms - actions that modify state
@@ -30,25 +30,19 @@ export const addTicketAtom = atom(
   }
 );
 
-export const updateTicketAtom = atom(
-  null,
-  (get, set, updatedTicket: Ticket) => {
-    const tickets = get(ticketsAtom);
-    const updatedTickets = tickets.map((ticket) =>
-      ticket.id === updatedTicket.id ? updatedTicket : ticket
-    );
-    set(ticketsAtom, updatedTickets);
-  }
-);
+export const updateTicketAtom = atom(null, (get, set, updatedTicket: Ticket) => {
+  const tickets = get(ticketsAtom);
+  const updatedTickets = tickets.map((ticket) =>
+    ticket.id === updatedTicket.id ? updatedTicket : ticket
+  );
+  set(ticketsAtom, updatedTickets);
+});
 
-export const deleteTicketAtom = atom(
-  null,
-  (get, set, ticketId: string) => {
-    const tickets = get(ticketsAtom);
-    const filteredTickets = tickets.filter((ticket) => ticket.id !== ticketId);
-    set(ticketsAtom, filteredTickets);
-  }
-);
+export const deleteTicketAtom = atom(null, (get, set, ticketId: string) => {
+  const tickets = get(ticketsAtom);
+  const filteredTickets = tickets.filter((ticket) => ticket.id !== ticketId);
+  set(ticketsAtom, filteredTickets);
+});
 
 // Reorder tickets within or between columns
 export const reorderTicketsAtom = atom(
@@ -137,15 +131,12 @@ export const reorderStatusesAtom = atom(
   }
 );
 
-export const addLabelAtom = atom(
-  null,
-  (get, set, newLabel: Omit<Label, "id">) => {
-    const labels = get(labelsAtom);
-    const label: Label = {
-      ...newLabel,
-      id: newLabel.name.toLowerCase().replace(/\s+/g, "-"),
-    };
-    set(labelsAtom, [...labels, label]);
-    return label.id;
-  }
-);
+export const addLabelAtom = atom(null, (get, set, newLabel: Omit<Label, "id">) => {
+  const labels = get(labelsAtom);
+  const label: Label = {
+    ...newLabel,
+    id: newLabel.name.toLowerCase().replace(/\s+/g, "-"),
+  };
+  set(labelsAtom, [...labels, label]);
+  return label.id;
+});

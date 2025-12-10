@@ -1,15 +1,27 @@
+import {
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  Cross2Icon,
+  MixerHorizontalIcon,
+} from "@radix-ui/react-icons";
 import * as Popover from "@radix-ui/react-popover";
-import { motion, AnimatePresence } from "motion/react";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDownIcon, MixerHorizontalIcon, Cross2Icon, ArrowLeftIcon, ResetIcon } from "@radix-ui/react-icons";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { statusesAtom, ticketFiltersAtom, labelsAtom, addLabelAtom, assigneesAtom, requestersAtom } from "@/atoms/tickets";
-import { getStatusColor } from "@/utils/status";
-import { ProgressRing } from "./ProgressRing";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
+import {
+  addLabelAtom,
+  assigneesAtom,
+  labelsAtom,
+  requestersAtom,
+  statusesAtom,
+  ticketFiltersAtom,
+} from "@/atoms";
 import { BORDER_STYLES, BUTTON_STYLES } from "@/lib/styles";
+import { getStatusColor } from "@/utils/status";
 import Button from "./Button";
+import { ProgressRing } from "./ProgressRing";
 
 const LABEL_COLORS = [
   "#3b82f6", // blue
@@ -45,7 +57,14 @@ function getStatusProgressStyle(statusId: string) {
 }
 
 function SelectItemWrapper({ value, label, color }: SelectItemWrapperProps) {
-  const statusId = value === "all" ? undefined : value === "waiting-for-vendor" ? "waiting-vendor" : value === "waiting-for-requester" ? "waiting-requester" : value;
+  const statusId =
+    value === "all"
+      ? undefined
+      : value === "waiting-for-vendor"
+        ? "waiting-vendor"
+        : value === "waiting-for-requester"
+          ? "waiting-requester"
+          : value;
   const progressStyle = statusId ? getStatusProgressStyle(statusId) : null;
 
   return (
@@ -86,7 +105,7 @@ export function FilterButton() {
     "Search by label...",
     `Search by assignee...`,
     `Search by status...`,
-    "Search by description..."
+    "Search by description...",
   ];
 
   const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
@@ -97,15 +116,13 @@ export function FilterButton() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [placeholders.length]);
+  }, []);
 
   const filteredLabels = labels.filter((label) =>
     label.name.toLowerCase().includes(labelInputValue.toLowerCase())
   );
 
-  const selectedLabels = labels.filter((label) =>
-    filters.labels?.includes(label.id)
-  );
+  const selectedLabels = labels.filter((label) => filters.labels?.includes(label.id));
 
   const handleLabelSelect = (labelId: string) => {
     const currentLabels = filters.labels || [];
@@ -156,16 +173,19 @@ export function FilterButton() {
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
+          type="button"
           className={clsx(
-            "p-2.5 rounded cursor-pointer bg-white",
+            "p-2 rounded cursor-pointer bg-white",
             BUTTON_STYLES.base,
             "transition-all duration-150",
             "hover:bg-stone-100",
-            "focus:outline-none focus:ring-1 focus:ring-blue-400"
+            "focus:outline-none focus:ring-1 focus:ring-blue-400",
+            "flex items-center gap-2"
           )}
           aria-label="Filter tickets"
         >
           <MixerHorizontalIcon className="w-4 h-4 opacity-70" />
+          <span className="text-sm font-medium">Filter</span>
         </button>
       </Popover.Trigger>
 
@@ -180,10 +200,14 @@ export function FilterButton() {
               ease: "easeOut",
             }}
             style={{ transformOrigin: "top center" }}
-            className={clsx("bg-white rounded-sm shadow-md p-4 w-64 z-50 relative", BORDER_STYLES.base)}
+            className={clsx(
+              "bg-white rounded-sm shadow-md p-4 w-64 z-50 relative",
+              BORDER_STYLES.base
+            )}
           >
             <Popover.Close asChild>
               <button
+                type="button"
                 className={clsx(
                   "absolute top-3 right-3 p-1 rounded",
                   "hover:bg-stone-100 transition-colors duration-150",
@@ -196,17 +220,20 @@ export function FilterButton() {
             </Popover.Close>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-sm  block mb-1">Search</label>
+                <label htmlFor="search" className="text-sm  block mb-1">
+                  Search
+                </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={filters.search || ""}
-                    onChange={(e) =>
-                      setFilters({ ...filters, search: e.target.value })
-                    }
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className={clsx("w-full px-3 py-2 rounded-sm text-sm", BORDER_STYLES.input)}
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm",
+                      BORDER_STYLES.input
+                    )}
                   />
                   {!filters.search && !isFocused && (
                     <div className="absolute inset-0 px-3 py-2 pointer-events-none overflow-hidden">
@@ -227,33 +254,51 @@ export function FilterButton() {
                 </div>
               </div>
               <div>
-                <label className="text-sm  block mb-1">Status</label>
+                <label htmlFor="status" className="text-sm  block mb-1">
+                  Status
+                </label>
                 <Select.Root
                   value={filters.status || "all"}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, status: value === "all" ? undefined : value })
+                    setFilters({
+                      ...filters,
+                      status: value === "all" ? undefined : value,
+                    })
                   }
                   open={selectOpen}
                   onOpenChange={setSelectOpen}
                 >
-                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                  <Select.Trigger
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between",
+                      BORDER_STYLES.input
+                    )}
+                  >
                     <div className="flex items-center gap-2">
-                      {selectedColor && filters.status && filters.status !== "all" && (() => {
-                        const statusId = filters.status === "waiting-for-vendor" ? "waiting-vendor" : filters.status === "waiting-for-requester" ? "waiting-requester" : filters.status;
-                        const progressStyle = getStatusProgressStyle(statusId);
-                        return (
-                          <ProgressRing
-                            color={selectedColor}
-                            fill={progressStyle.fill}
-                            dashed={progressStyle.dashed}
-                            size="sm"
-                          />
-                        );
-                      })()}
+                      {selectedColor &&
+                        filters.status &&
+                        filters.status !== "all" &&
+                        (() => {
+                          const statusId =
+                            filters.status === "waiting-for-vendor"
+                              ? "waiting-vendor"
+                              : filters.status === "waiting-for-requester"
+                                ? "waiting-requester"
+                                : filters.status;
+                          const progressStyle = getStatusProgressStyle(statusId);
+                          return (
+                            <ProgressRing
+                              color={selectedColor}
+                              fill={progressStyle.fill}
+                              dashed={progressStyle.dashed}
+                              size="sm"
+                            />
+                          );
+                        })()}
                       <Select.Value placeholder="All statuses" />
                     </div>
                     <Select.Icon className="transition-transform duration-150">
-                      <ChevronDownIcon 
+                      <ChevronDownIcon
                         className={clsx(
                           "w-3 h-3 transition-transform duration-150 opacity-70",
                           selectOpen && "rotate-180"
@@ -265,7 +310,9 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                      className={clsx(
+                        "bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md"
+                      )}
                     >
                       <Select.Viewport className="p-1">
                         <SelectItemWrapper value="all" label="All statuses" />
@@ -287,10 +334,7 @@ export function FilterButton() {
                         <SelectItemWrapper
                           value="waiting-for-requester"
                           label="Waiting for Requester"
-                          color={getStatusColor(
-                            "waiting-for-requester",
-                            statuses
-                          )}
+                          color={getStatusColor("waiting-for-requester", statuses)}
                         />
                         <SelectItemWrapper
                           value="done"
@@ -303,7 +347,9 @@ export function FilterButton() {
                 </Select.Root>
               </div>
               <div>
-                <label className="text-sm block mb-1">Labels</label>
+                <label htmlFor="labels" className="text-sm block mb-1">
+                  Labels
+                </label>
                 {selectedLabels.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {selectedLabels.map((label) => (
@@ -340,18 +386,28 @@ export function FilterButton() {
                     onFocus={() => setLabelDropdownOpen(true)}
                     onBlur={(e) => {
                       // Don't close if clicking inside the dropdown
-                      if (!e.relatedTarget || !e.currentTarget.parentElement?.contains(e.relatedTarget as Node)) {
+                      if (
+                        !e.relatedTarget ||
+                        !e.currentTarget.parentElement?.contains(e.relatedTarget as Node)
+                      ) {
                         setTimeout(() => {
                           setLabelDropdownOpen(false);
                           setCreatingLabelName(null);
                         }, 200);
                       }
                     }}
-                    className={clsx("w-full px-3 py-2 rounded-sm text-sm", BORDER_STYLES.input)}
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm",
+                      BORDER_STYLES.input
+                    )}
                   />
                   {labelDropdownOpen && (
                     <div
-                      className={clsx("absolute top-full left-0 right-0 mt-1 bg-white rounded-sm shadow-xs max-h-48 overflow-y-auto z-50", BORDER_STYLES.base)}
+                      role="menu"
+                      className={clsx(
+                        "absolute top-full left-0 right-0 mt-1 bg-white rounded-sm shadow-xs max-h-48 overflow-y-auto z-50",
+                        BORDER_STYLES.base
+                      )}
                       onMouseDown={(e) => e.preventDefault()}
                     >
                       {creatingLabelName ? (
@@ -436,10 +492,18 @@ export function FilterButton() {
                 <Select.Root
                   value={filters.assignee || "all"}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, assignee: value === "all" ? undefined : value })
+                    setFilters({
+                      ...filters,
+                      assignee: value === "all" ? undefined : value,
+                    })
                   }
                 >
-                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                  <Select.Trigger
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between",
+                      BORDER_STYLES.input
+                    )}
+                  >
                     <Select.Value placeholder="All assignees" />
                     <Select.Icon>
                       <ChevronDownIcon className="w-3 h-3 opacity-70" />
@@ -449,14 +513,23 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                      className={clsx(
+                        "bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md"
+                      )}
                     >
                       <Select.Viewport className="p-1">
-                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                        <Select.Item
+                          value="all"
+                          className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                        >
                           <Select.ItemText>All assignees</Select.ItemText>
                         </Select.Item>
                         {assignees.map((assignee) => (
-                          <Select.Item key={assignee.email} value={assignee.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.Item
+                            key={assignee.email}
+                            value={assignee.email}
+                            className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                          >
                             <Select.ItemText>{assignee.name}</Select.ItemText>
                           </Select.Item>
                         ))}
@@ -470,10 +543,18 @@ export function FilterButton() {
                 <Select.Root
                   value={filters.requester || "all"}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, requester: value === "all" ? undefined : value })
+                    setFilters({
+                      ...filters,
+                      requester: value === "all" ? undefined : value,
+                    })
                   }
                 >
-                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                  <Select.Trigger
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between",
+                      BORDER_STYLES.input
+                    )}
+                  >
                     <Select.Value placeholder="All requesters" />
                     <Select.Icon>
                       <ChevronDownIcon className="w-3 h-3 opacity-70" />
@@ -483,14 +564,23 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                      className={clsx(
+                        "bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md"
+                      )}
                     >
                       <Select.Viewport className="p-1">
-                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                        <Select.Item
+                          value="all"
+                          className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                        >
                           <Select.ItemText>All requesters</Select.ItemText>
                         </Select.Item>
                         {requesters.map((requester) => (
-                          <Select.Item key={requester.email} value={requester.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.Item
+                            key={requester.email}
+                            value={requester.email}
+                            className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                          >
                             <Select.ItemText>{requester.name}</Select.ItemText>
                           </Select.Item>
                         ))}
@@ -504,10 +594,18 @@ export function FilterButton() {
                 <Select.Root
                   value={filters.requestFor || "all"}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, requestFor: value === "all" ? undefined : value })
+                    setFilters({
+                      ...filters,
+                      requestFor: value === "all" ? undefined : value,
+                    })
                   }
                 >
-                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                  <Select.Trigger
+                    className={clsx(
+                      "w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between",
+                      BORDER_STYLES.input
+                    )}
+                  >
                     <Select.Value placeholder="All recipients" />
                     <Select.Icon>
                       <ChevronDownIcon className="w-3 h-3 opacity-70" />
@@ -517,14 +615,23 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                      className={clsx(
+                        "bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md"
+                      )}
                     >
                       <Select.Viewport className="p-1">
-                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                        <Select.Item
+                          value="all"
+                          className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                        >
                           <Select.ItemText>All recipients</Select.ItemText>
                         </Select.Item>
                         {requesters.map((requester) => (
-                          <Select.Item key={requester.email} value={requester.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.Item
+                            key={requester.email}
+                            value={requester.email}
+                            className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100"
+                          >
                             <Select.ItemText>{requester.name}</Select.ItemText>
                           </Select.Item>
                         ))}

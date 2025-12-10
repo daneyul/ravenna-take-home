@@ -1,9 +1,9 @@
-import { Requester } from "@/types/ticket";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { clsx } from "clsx";
 import { PersonIcon } from "@radix-ui/react-icons";
+import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { BORDER_STYLES } from "@/lib/styles";
+import type { Requester } from "@/types/ticket";
 
 function getInitials(name: string) {
   return name
@@ -27,6 +27,7 @@ export function AssigneeDropdown({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
+          type="button"
           className={clsx(
             "flex items-center gap-2 px-3 py-2 rounded-md bg-white hover:bg-stone-100",
             BORDER_STYLES.interactive,
@@ -60,7 +61,10 @@ export function AssigneeDropdown({
               ease: "easeOut",
             }}
             style={{ transformOrigin: "top left" }}
-            className={clsx("bg-white rounded-md shadow-xs py-1 min-w-[200px] z-50", BORDER_STYLES.base)}
+            className={clsx(
+              "bg-white rounded-md shadow-xs py-1 min-w-[200px] z-50",
+              BORDER_STYLES.base
+            )}
           >
             <DropdownMenu.Item
               onSelect={() => onAssigneeChange(undefined)}

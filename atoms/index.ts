@@ -1,27 +1,18 @@
-/**
- * Centralized atom exports
- * Import from '@/atoms' or '@/atoms/tickets' for backwards compatibility
- */
-
-// Base state
 export {
-  ticketsAtom,
-  statusesAtom,
-  labelsAtom,
-  assigneesAtom,
-  requestersAtom,
-  dataDensityAtom,
-  columnSortAtom,
-} from "./state";
-export type { DataDensity, SortDirection } from "./state";
-
-// Filters
+  addLabelAtom,
+  addTicketAtom,
+  deleteTicketAtom,
+  reorderStatusesAtom,
+  reorderTicketsAtom,
+  updateTicketAtom,
+  updateTicketStatusAtom,
+} from "./actions";
 export {
-  ticketFiltersAtom,
   filteredTicketsAtom,
+  ticketFiltersAtom,
 } from "./filters";
+export type { GroupBy, GroupColumn } from "./grouping";
 
-// Grouping
 export {
   groupByAtom,
   groupColumnsAtom,
@@ -29,15 +20,13 @@ export {
   ticketsByStatusAtom,
   updateTicketGroupAtom,
 } from "./grouping";
-export type { GroupBy, GroupColumn } from "./grouping";
-
-// Actions
+export type { DataDensity, SortDirection } from "./state";
 export {
-  updateTicketStatusAtom,
-  addTicketAtom,
-  updateTicketAtom,
-  deleteTicketAtom,
-  reorderTicketsAtom,
-  reorderStatusesAtom,
-  addLabelAtom,
-} from "./actions";
+  assigneesAtom,
+  columnSortAtom,
+  dataDensityAtom,
+  labelsAtom,
+  requestersAtom,
+  statusesAtom,
+  ticketsAtom,
+} from "./state";

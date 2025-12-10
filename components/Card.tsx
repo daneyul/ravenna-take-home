@@ -2,19 +2,19 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Separator } from "@radix-ui/react-separator";
 import { clsx } from "clsx";
-import Link from "next/link";
 import { useAtomValue, useSetAtom } from "jotai";
 import { motion } from "motion/react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import Link from "next/link";
+import { toast } from "sonner";
+import { assigneesAtom, updateTicketAtom } from "@/atoms";
+import { BORDER_STYLES } from "@/lib/styles";
 import type { Ticket } from "@/types/ticket";
 import { TICKET_TYPE } from "@/types/ticket";
-import { Separator } from "@radix-ui/react-separator";
-import { assigneesAtom, updateTicketAtom } from "@/atoms";
 import { Label } from "./Label";
 import { PriorityIcon } from "./PriorityIcon";
-import { BORDER_STYLES } from "@/lib/styles";
-import { toast } from "sonner";
 
 interface CardProps {
   ticket: Ticket;
@@ -47,9 +47,7 @@ function CardContent({
       ...ticket,
       assignee: newAssignee,
     });
-    toast.success(
-      newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned"
-    );
+    toast.success(newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned");
   };
 
   return (
@@ -62,7 +60,7 @@ function CardContent({
         "block w-full",
         "bg-white",
         BORDER_STYLES.interactive,
-        "rounded-md hover:shadow-xs",
+        "rounded-md hover:shadow-sm",
         "pl-4 pr-4 py-4 pt-2",
         "transition-all duration-150",
         "select-none"
@@ -78,11 +76,7 @@ function CardContent({
               e.stopPropagation();
             }}
           >
-            <PriorityIcon
-              priority={ticket.priority}
-              ticket={ticket}
-              interactive
-            />
+            <PriorityIcon priority={ticket.priority} ticket={ticket} interactive />
           </div>
           <span className="text-xs font-medium opacity-50">TICKET-{ticket.id}</span>
         </div>
@@ -102,7 +96,9 @@ function CardContent({
                     ? "bg-stone-200 hover:bg-stone-300"
                     : "border border-stone-300 hover:bg-stone-100"
                 )}
-                title={ticket.assignee ? `Assigned to ${ticket.assignee.name}` : "Unassigned"}
+                title={
+                  ticket.assignee ? `Assigned to ${ticket.assignee.name}` : "Unassigned"
+                }
               >
                 {ticket.assignee ? getInitials(ticket.assignee.name) : "?"}
               </button>
@@ -162,9 +158,7 @@ function CardContent({
       <Separator className="bg-stone-200 h-px mb-3 -mx-4" />
 
       {/* Title */}
-      <h3 className="font-medium mb-2 text-sm leading-snug">
-        {ticket.title}
-      </h3>
+      <h3 className="font-medium mb-2 text-sm leading-snug">{ticket.title}</h3>
 
       {/* Description */}
       {ticket.description && (
@@ -200,21 +194,15 @@ function CardContent({
 }
 
 export function Card({ ticket, isPreview = false }: CardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: ticket.id,
-    data: {
-      type: TICKET_TYPE,
-      ticket,
-    },
-    disabled: isPreview,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
+      id: ticket.id,
+      data: {
+        type: TICKET_TYPE,
+        ticket,
+      },
+      disabled: isPreview,
+    });
 
   if (isPreview) {
     return (

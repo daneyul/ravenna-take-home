@@ -1,6 +1,12 @@
 import { atom } from "jotai";
-import { Ticket, Status, Label, Requester } from "@/types/ticket";
-import { MOCK_TICKETS, MOCK_STATUSES, MOCK_LABELS, MOCK_ASSIGNEES, DENSE_MOCK_TICKETS } from "@/data/mockData";
+import {
+  DENSE_MOCK_TICKETS,
+  MOCK_ASSIGNEES,
+  MOCK_LABELS,
+  MOCK_STATUSES,
+  MOCK_TICKETS,
+} from "@/data/mockData";
+import type { Label, Requester, Status, Ticket } from "@/types/ticket";
 
 export type DataDensity = "empty" | "normal" | "dense";
 

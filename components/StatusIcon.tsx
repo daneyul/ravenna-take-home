@@ -47,12 +47,5 @@ export function StatusIcon({ statusId, color, size = "sm" }: StatusIconProps) {
   const { fill, dashed } = getStatusStyle();
   const strokeColor = color || "#000";
 
-  return (
-    <ProgressRing
-      color={strokeColor}
-      fill={fill}
-      dashed={dashed}
-      size={size}
-    />
-  );
+  return <ProgressRing color={strokeColor} fill={fill} dashed={dashed} size={size} />;
 }

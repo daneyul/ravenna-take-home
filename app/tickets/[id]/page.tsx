@@ -1,15 +1,10 @@
-/**
- * Ticket detail page
- * Dynamic route for viewing individual ticket details
- */
-
 "use client";
 
-import { TicketDetailView } from "@/components/tickets/TicketDetailView";
 import { useAtomValue } from "jotai";
-import { ticketsAtom } from "@/atoms/tickets";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ticketsAtom } from "@/atoms";
+import { TicketDetailView } from "@/components/tickets/TicketDetailView";
 
 export default function TicketPage() {
   const params = useParams();
@@ -19,7 +14,6 @@ export default function TicketPage() {
 
   const ticket = tickets.find((t) => t.id === ticketId);
 
-  // Redirect to tickets page if ticket not found
   useEffect(() => {
     if (!ticket) {
       router.push("/tickets");

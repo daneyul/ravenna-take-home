@@ -11,6 +11,7 @@ export default function NavItem({
 }) {
   return (
     <button
+      type="button"
       className={clsx(
         "flex items-center gap-3 px-3 py-2 rounded-sm text-sm",
         "transition-colors duration-150",

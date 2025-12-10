@@ -1,7 +1,7 @@
 import { atom } from "jotai";
-import { Priority, Ticket } from "@/types/ticket";
-import { statusesAtom, labelsAtom, assigneesAtom, ticketsAtom } from "./state";
+import type { Priority, Ticket } from "@/types/ticket";
 import { filteredTicketsAtom } from "./filters";
+import { assigneesAtom, labelsAtom, statusesAtom, ticketsAtom } from "./state";
 
 export type GroupBy = "status" | "assignee" | "priority" | "label";
 
@@ -25,7 +25,12 @@ export const groupColumnsAtom = atom((get) => {
 
   switch (groupBy) {
     case "status":
-      return statuses.map(s => ({ id: s.id, name: s.name, color: s.color, order: s.order }));
+      return statuses.map((s) => ({
+        id: s.id,
+        name: s.name,
+        color: s.color,
+        order: s.order,
+      }));
 
     case "assignee":
       // Add all assignees
@@ -44,7 +49,7 @@ export const groupColumnsAtom = atom((get) => {
       });
       return columns;
 
-    case "priority":
+    case "priority": {
       const priorities: { value: Priority; label: string; order: number }[] = [
         { value: "severe", label: "Severe", order: 0 },
         { value: "high", label: "High", order: 1 },
@@ -52,7 +57,8 @@ export const groupColumnsAtom = atom((get) => {
         { value: "low", label: "Low", order: 3 },
         { value: "none", label: "None", order: 4 },
       ];
-      return priorities.map(p => ({ id: p.value, name: p.label, order: p.order }));
+      return priorities.map((p) => ({ id: p.value, name: p.label, order: p.order }));
+    }
 
     case "label":
       // Add all labels
@@ -73,7 +79,12 @@ export const groupColumnsAtom = atom((get) => {
       return columns;
 
     default:
-      return statuses.map(s => ({ id: s.id, name: s.name, color: s.color, order: s.order }));
+      return statuses.map((s) => ({
+        id: s.id,
+        name: s.name,
+        color: s.color,
+        order: s.order,
+      }));
   }
 });
 
@@ -190,7 +201,7 @@ export const updateTicketGroupAtom = atom(
 
     const oldOrder = ticket.order;
     let oldGroupValue: string;
-    let updatedTicket: Ticket = { ...ticket, order: newOrder };
+    const updatedTicket: Ticket = { ...ticket, order: newOrder };
 
     // Determine old group value and update ticket based on groupBy
     switch (groupBy) {

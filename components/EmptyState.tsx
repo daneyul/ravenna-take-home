@@ -9,9 +9,7 @@ export function EmptyState() {
         </div>
         <div className="flex flex-col items-center gap-1">
           <h3 className="font-medium text-lg">No tickets</h3>
-          <p className="text-sm opacity-70">
-            Create a new ticket to get started
-          </p>
+          <p className="text-sm opacity-70">Create a new ticket to get started</p>
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ export default function Button({
 }) {
   return (
     <button
+      type="button"
       className={clsx(
         "flex items-center gap-2 px-4 py-2",
         "rounded-sm",

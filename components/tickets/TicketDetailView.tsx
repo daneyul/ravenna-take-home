@@ -3,31 +3,33 @@
 import {
   ArrowLeftIcon,
   DotsVerticalIcon,
+  EnvelopeClosedIcon,
   PersonIcon,
   PlusIcon,
   TrashIcon,
-  EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useRouter } from "next/navigation";
+import * as Popover from "@radix-ui/react-popover";
 import { clsx } from "clsx";
-import { useState, useEffect, useRef, startTransition } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "motion/react";
 import {
-  statusesAtom,
   assigneesAtom,
-  labelsAtom,
-  updateTicketAtom,
   deleteTicketAtom,
-} from "@/atoms/tickets";
-import type { Ticket, Requester } from "@/types/ticket";
-import { StatusDropdown } from "./StatusDropdown";
-import { AssigneeDropdown } from "./AssigneeDropdown";
+  labelsAtom,
+  requestersAtom,
+  statusesAtom,
+  updateTicketAtom,
+} from "@/atoms";
+import { BORDER_STYLES } from "@/lib/styles";
+import type { Requester, Ticket } from "@/types/ticket";
 import { Label } from "../Label";
 import { PriorityIcon } from "../PriorityIcon";
-import { BORDER_STYLES } from "@/lib/styles";
-import * as Popover from "@radix-ui/react-popover";
+import { RequesterCombobox } from "../RequesterCombobox";
+import { AssigneeDropdown } from "./AssigneeDropdown";
+import { StatusDropdown } from "./StatusDropdown";
 
 interface TicketDetailViewProps {
   ticket: Ticket;
@@ -38,11 +40,16 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
   const statuses = useAtomValue(statusesAtom);
   const assignees = useAtomValue(assigneesAtom);
   const allLabels = useAtomValue(labelsAtom);
+  const requesters = useAtomValue(requestersAtom);
   const updateTicket = useSetAtom(updateTicketAtom);
   const deleteTicket = useSetAtom(deleteTicketAtom);
   const currentStatus = statuses.find((s) => s.id === ticket.status);
 
   const [description, setDescription] = useState(ticket.description || "");
+  const [requesterName, setRequesterName] = useState(ticket.requester.name);
+  const [requesterEmail, setRequesterEmail] = useState(ticket.requester.email);
+  const [requestForName, setRequestForName] = useState(ticket.requestFor.name);
+  const [requestForEmail, setRequestForEmail] = useState(ticket.requestFor.email);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [shouldAnimateDelete, setShouldAnimateDelete] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -54,9 +61,13 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       prevTicketIdRef.current = ticket.id;
       startTransition(() => {
         setDescription(ticket.description || "");
+        setRequesterName(ticket.requester.name);
+        setRequesterEmail(ticket.requester.email);
+        setRequestForName(ticket.requestFor.name);
+        setRequestForEmail(ticket.requestFor.email);
       });
     }
-  }, [ticket.id, ticket.description]);
+  }, [ticket.id, ticket.description, ticket.requester, ticket.requestFor]);
 
   const handleStatusChange = (newStatus: string) => {
     updateTicket({
@@ -71,14 +82,10 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       ...ticket,
       assignee: newAssignee,
     });
-    toast.success(
-      newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned"
-    );
+    toast.success(newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned");
   };
 
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newDescription = e.target.value;
     setDescription(newDescription);
 
@@ -104,18 +111,14 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
     const newLabels = hasLabel
       ? ticket.labels.filter((l) => l.id !== labelId)
-      : [...ticket.labels, allLabels.find((l) => l.id === labelId)!].filter(
-          Boolean
-        );
+      : [...ticket.labels, allLabels.find((l) => l.id === labelId)!].filter(Boolean);
 
     updateTicket({
       ...ticket,
       labels: newLabels,
     });
 
-    toast.success(
-      hasLabel ? `Removed ${labelName} label` : `Added ${labelName} label`
-    );
+    toast.success(hasLabel ? `Removed ${labelName} label` : `Added ${labelName} label`);
   };
 
   const handleDeleteTicket = () => {
@@ -142,6 +145,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
     <div className="flex flex-col h-screen">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-stone-200">
         <button
+          type="button"
           onClick={() => router.push("/tickets")}
           className={clsx(
             "p-1.5 rounded hover:shadow-xs transition-colors duration-150 group cursor-pointer bg-white",
@@ -191,9 +195,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                     BORDER_STYLES.base
                   )}
                 >
-                  <div
-                    className="p-1"
-                  >
+                  <div className="p-1">
                     <motion.button
                       layout
                       transition={{ duration: 0.15, ease: "easeOut" }}
@@ -217,9 +219,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                             transition={{ duration: 0.15, ease: "easeInOut" }}
                             className="inline-block"
                           >
-                            {deleteConfirm
-                              ? "Click again to confirm"
-                              : "Delete ticket"}
+                            {deleteConfirm ? "Click again to confirm" : "Delete ticket"}
                           </motion.span>
                         </AnimatePresence>
                       </div>
@@ -257,9 +257,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm">{ticket.requester.name}</span>
-                  <span className="text-xs opacity-70">
-                    {ticket.requester.email}
-                  </span>
+                  <span className="text-xs opacity-70">{ticket.requester.email}</span>
                 </div>
               </div>
             </div>
@@ -272,9 +270,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm">{ticket.requestFor.name}</span>
-                  <span className="text-xs opacity-70">
-                    {ticket.requestFor.email}
-                  </span>
+                  <span className="text-xs opacity-70">{ticket.requestFor.email}</span>
                 </div>
               </div>
             </div>
@@ -310,9 +306,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
           </div>
 
           <div className="mb-8">
-            <label className="text-sm block mb-3 font-medium">
-              Description
-            </label>
+            <label className="text-sm block mb-3 font-medium">Description</label>
             <textarea
               value={description}
               onChange={handleDescriptionChange}
@@ -329,12 +323,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
             <DetailLabel>Labels</DetailLabel>
             <div className="flex flex-wrap gap-1.5">
               {ticket.labels.map((label) => (
-                <Label
-                  key={label.id}
-                  label={label}
-                  ticket={ticket}
-                  interactive
-                />
+                <Label key={label.id} label={label} ticket={ticket} interactive />
               ))}
 
               {/* Add Label Button */}
@@ -362,14 +351,10 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                     )}
                   >
                     <div className="p-2">
-                      <div className="text-xs opacity-70 mb-2 px-2">
-                        Add labels
-                      </div>
+                      <div className="text-xs opacity-70 mb-2 px-2">Add labels</div>
                       <div className="max-h-48 overflow-y-auto">
                         {allLabels.map((label) => {
-                          const isSelected = ticket.labels.some(
-                            (l) => l.id === label.id
-                          );
+                          const isSelected = ticket.labels.some((l) => l.id === label.id);
                           return (
                             <button
                               key={label.id}
@@ -386,9 +371,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                               />
                               <span className="text-xs">{label.name}</span>
                               {isSelected && (
-                                <span className="ml-auto text-xs opacity-50">
-                                  ✓
-                                </span>
+                                <span className="ml-auto text-xs opacity-50">✓</span>
                               )}
                             </button>
                           );

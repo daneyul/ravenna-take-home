@@ -1,27 +1,27 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { Cross1Icon, Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
 import * as Popover from "@radix-ui/react-popover";
-import { Cross2Icon, PlusIcon, Cross1Icon } from "@radix-ui/react-icons";
-import { useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 import { clsx } from "clsx";
-import { toast } from "sonner";
+import { useAtomValue, useSetAtom } from "jotai";
 import { motion } from "motion/react";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   addTicketAtom,
-  statusesAtom,
-  labelsAtom,
   assigneesAtom,
+  labelsAtom,
   requestersAtom,
-} from "@/atoms/tickets";
-import type { Priority, Requester, Label } from "@/types/ticket";
+  statusesAtom,
+} from "@/atoms";
 import { BORDER_STYLES } from "@/lib/styles";
-import { PriorityIcon } from "./PriorityIcon";
-import { StatusDropdown } from "./tickets/StatusDropdown";
-import { AssigneeDropdown } from "./tickets/AssigneeDropdown";
-import { RequesterCombobox } from "./RequesterCombobox";
+import type { Label, Priority, Requester } from "@/types/ticket";
 import Button from "./Button";
+import { PriorityIcon } from "./PriorityIcon";
+import { RequesterCombobox } from "./RequesterCombobox";
+import { AssigneeDropdown } from "./tickets/AssigneeDropdown";
+import { StatusDropdown } from "./tickets/StatusDropdown";
 
 interface NewTicketDialogProps {
   open: boolean;
@@ -97,9 +97,7 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
 
   const toggleLabel = (labelId: string) => {
     setSelectedLabels((prev) =>
-      prev.includes(labelId)
-        ? prev.filter((id) => id !== labelId)
-        : [...prev, labelId]
+      prev.includes(labelId) ? prev.filter((id) => id !== labelId) : [...prev, labelId]
     );
   };
 
@@ -121,225 +119,219 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
               BORDER_STYLES.base
             )}
           >
-          {/* Header */}
-          <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-4 border-b border-stone-200">
-            <Dialog.Title className="font-medium">
-              New Ticket
-            </Dialog.Title>
-            <Dialog.Close asChild>
-              <button
-                type="button"
-                className="h-6 w-6 rounded hover:bg-stone-100 flex items-center justify-center transition-colors duration-150"
-                aria-label="Close"
-              >
-                <Cross2Icon className="h-4 w-4 opacity-50" />
-              </button>
-            </Dialog.Close>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-4">
-            {/* Title with Priority Icon */}
-            <div className="flex items-center gap-3 mb-6">
-              <PriorityIcon
-                priority={priority}
-                size="lg"
-                interactive
-                onPriorityChange={setPriority}
-              />
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={clsx(
-                  "flex-1 text-2xl font-medium outline-none",
-                  "placeholder:opacity-40"
-                )}
-                placeholder="Ticket title"
-                autoFocus
-              />
-            </div>
-
-            {/* Metadata Grid */}
-            <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-stone-200">
-              {/* Status */}
-              <div>
-                <FormLabel>Status</FormLabel>
-                <StatusDropdown
-                  currentStatus={currentStatus}
-                  statuses={statuses}
-                  onStatusChange={setStatus}
-                />
-              </div>
-
-              {/* Assignee */}
-              <div>
-                <FormLabel>Assignee</FormLabel>
-                <AssigneeDropdown
-                  currentAssignee={selectedAssignee}
-                  assignees={assignees}
-                  onAssigneeChange={setSelectedAssignee}
-                />
-              </div>
-
-              {/* Requester Name */}
-              <div>
-                <FormLabel>
-                  Requester Name <span className="text-red-500">*</span>
-                </FormLabel>
-                <RequesterCombobox
-                  requesters={requesters}
-                  value={requesterName}
-                  onChange={(value, requester) => {
-                    setRequesterName(value);
-                    if (requester) {
-                      setRequesterEmail(requester.email);
-                    }
-                  }}
-                  placeholder="Enter name"
-                  type="name"
-                />
-              </div>
-
-              {/* Requester Email */}
-              <div>
-                <FormLabel>
-                  Requester Email <span className="text-red-500">*</span>
-                </FormLabel>
-                <RequesterCombobox
-                  requesters={requesters}
-                  value={requesterEmail}
-                  onChange={(value, requester) => {
-                    setRequesterEmail(value);
-                    if (requester) {
-                      setRequesterName(requester.name);
-                    }
-                  }}
-                  placeholder="Enter email"
-                  type="email"
-                />
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="mb-8">
-              <FormLabel>Description</FormLabel>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={clsx(
-                  "w-full min-h-[120px] px-3 py-2 text-sm rounded-md bg-white resize-y",
-                  BORDER_STYLES.input
-                )}
-                placeholder="Add a description..."
-              />
-            </div>
-
-            {/* Labels */}
-            <div className="mb-8">
-              <FormLabel>Labels</FormLabel>
-              <div className="flex flex-wrap gap-1.5">
-                {/* Selected Labels */}
-                {selectedLabels.map((labelId) => {
-                  const label = labels.find((l) => l.id === labelId);
-                  if (!label) return null;
-                  return (
-                    <button
-                      key={label.id}
-                      type="button"
-                      onClick={() => toggleLabel(label.id)}
-                      className={clsx(
-                        "rounded-sm flex items-center px-2 py-1.5 bg-white group transition-all duration-150 hover:opacity-80",
-                        BORDER_STYLES.base
-                      )}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: label.color }}
-                      />
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs">
-                        {label.name}
-                      </span>
-                      <Cross1Icon className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity duration-150 -ml-1" />
-                    </button>
-                  );
-                })}
-
-                {/* Add Label Button */}
-                <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <button
-                      type="button"
-                      className={clsx(
-                        "rounded-sm flex items-center justify-center cursor-pointer px-2 py-1.5 bg-white transition-all duration-150 hover:bg-stone-50",
-                        BORDER_STYLES.interactive
-                      )}
-                      aria-label="Add label"
-                    >
-                      <PlusIcon className="w-3 h-3 opacity-50" />
-                    </button>
-                  </Popover.Trigger>
-
-                  <Popover.Portal>
-                    <Popover.Content
-                      align="start"
-                      sideOffset={4}
-                      className={clsx(
-                        "bg-white rounded-md shadow-lg w-48 z-50",
-                        BORDER_STYLES.base
-                      )}
-                    >
-                      <div className="p-2">
-                        <div className="text-xs opacity-70 mb-2 px-2">Add labels</div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {labels.map((label) => {
-                            const isSelected = selectedLabels.includes(label.id);
-                            return (
-                              <button
-                                key={label.id}
-                                type="button"
-                                onClick={() => toggleLabel(label.id)}
-                                className={clsx(
-                                  "w-full px-2 py-1.5 text-sm flex items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
-                                  isSelected && "bg-stone-50"
-                                )}
-                              >
-                                <span
-                                  className="w-2 h-2 rounded-full"
-                                  style={{ backgroundColor: label.color }}
-                                />
-                                <span className="text-xs">{label.name}</span>
-                                {isSelected && (
-                                  <span className="ml-auto text-xs opacity-50">✓</span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </Popover.Content>
-                  </Popover.Portal>
-                </Popover.Root>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+            {/* Header */}
+            <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-4 border-b border-stone-200">
+              <Dialog.Title className="font-medium">New Ticket</Dialog.Title>
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm rounded-md hover:bg-stone-100 transition-colors duration-150"
+                  className="h-6 w-6 rounded hover:bg-stone-100 flex items-center justify-center transition-colors duration-150"
+                  aria-label="Close"
                 >
-                  Cancel
+                  <Cross2Icon className="h-4 w-4 opacity-50" />
                 </button>
               </Dialog.Close>
-              <Button
-                icon={<PlusIcon />}
-                onClick={() => handleSubmit()}
-              >
-                Create Ticket
-              </Button>
             </div>
-          </form>
+
+            <form onSubmit={handleSubmit} className="p-4">
+              {/* Title with Priority Icon */}
+              <div className="flex items-center gap-3 mb-6">
+                <PriorityIcon
+                  priority={priority}
+                  size="lg"
+                  interactive
+                  onPriorityChange={setPriority}
+                />
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={clsx(
+                    "flex-1 text-2xl font-medium outline-none",
+                    "placeholder:opacity-40"
+                  )}
+                  placeholder="Ticket title"
+                />
+              </div>
+
+              {/* Metadata Grid */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                {/* Status */}
+                <div>
+                  <FormLabel>Status</FormLabel>
+                  <StatusDropdown
+                    currentStatus={currentStatus}
+                    statuses={statuses}
+                    onStatusChange={setStatus}
+                  />
+                </div>
+
+                {/* Assignee */}
+                <div>
+                  <FormLabel>Assignee</FormLabel>
+                  <AssigneeDropdown
+                    currentAssignee={selectedAssignee}
+                    assignees={assignees}
+                    onAssigneeChange={setSelectedAssignee}
+                  />
+                </div>
+
+                {/* Requester Name */}
+                <div>
+                  <FormLabel>
+                    Requester Name <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <RequesterCombobox
+                    requesters={requesters}
+                    value={requesterName}
+                    onChange={(value, requester) => {
+                      setRequesterName(value);
+                      if (requester) {
+                        setRequesterEmail(requester.email);
+                      }
+                    }}
+                    placeholder="Enter name"
+                    type="name"
+                  />
+                </div>
+
+                {/* Requester Email */}
+                <div>
+                  <FormLabel>
+                    Requester Email <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <RequesterCombobox
+                    requesters={requesters}
+                    value={requesterEmail}
+                    onChange={(value, requester) => {
+                      setRequesterEmail(value);
+                      if (requester) {
+                        setRequesterName(requester.name);
+                      }
+                    }}
+                    placeholder="Enter email"
+                    type="email"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-8">
+                <FormLabel>Description</FormLabel>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={clsx(
+                    "w-full min-h-[120px] px-3 py-2 text-sm rounded-md bg-white resize-y",
+                    BORDER_STYLES.input
+                  )}
+                  placeholder="Add a description..."
+                />
+              </div>
+
+              {/* Labels */}
+              <div className="mb-8">
+                <FormLabel>Labels</FormLabel>
+                <div className="flex flex-wrap gap-1.5">
+                  {/* Selected Labels */}
+                  {selectedLabels.map((labelId) => {
+                    const label = labels.find((l) => l.id === labelId);
+                    if (!label) return null;
+                    return (
+                      <button
+                        key={label.id}
+                        type="button"
+                        onClick={() => toggleLabel(label.id)}
+                        className={clsx(
+                          "rounded-sm flex items-center px-2 py-1.5 bg-white group transition-all duration-150 hover:opacity-80",
+                          BORDER_STYLES.base
+                        )}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs">
+                          {label.name}
+                        </span>
+                        <Cross1Icon className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity duration-150 -ml-1" />
+                      </button>
+                    );
+                  })}
+
+                  {/* Add Label Button */}
+                  <Popover.Root>
+                    <Popover.Trigger asChild>
+                      <button
+                        type="button"
+                        className={clsx(
+                          "rounded-sm flex items-center justify-center cursor-pointer px-2 py-1.5 bg-white transition-all duration-150 hover:bg-stone-50",
+                          BORDER_STYLES.interactive
+                        )}
+                        aria-label="Add label"
+                      >
+                        <PlusIcon className="w-3 h-3 opacity-50" />
+                      </button>
+                    </Popover.Trigger>
+
+                    <Popover.Portal>
+                      <Popover.Content
+                        align="start"
+                        sideOffset={4}
+                        className={clsx(
+                          "bg-white rounded-md shadow-lg w-48 z-50",
+                          BORDER_STYLES.base
+                        )}
+                      >
+                        <div className="p-2">
+                          <div className="text-xs opacity-70 mb-2 px-2">Add labels</div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {labels.map((label) => {
+                              const isSelected = selectedLabels.includes(label.id);
+                              return (
+                                <button
+                                  key={label.id}
+                                  type="button"
+                                  onClick={() => toggleLabel(label.id)}
+                                  className={clsx(
+                                    "w-full px-2 py-1.5 text-sm flex items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
+                                    isSelected && "bg-stone-50"
+                                  )}
+                                >
+                                  <span
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: label.color }}
+                                  />
+                                  <span className="text-xs">{label.name}</span>
+                                  {isSelected && (
+                                    <span className="ml-auto text-xs opacity-50">✓</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </Popover.Content>
+                    </Popover.Portal>
+                  </Popover.Root>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm rounded-md hover:bg-stone-100 transition-colors duration-150 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </Dialog.Close>
+                <Button icon={<PlusIcon />} onClick={() => handleSubmit()}>
+                  Create Ticket
+                </Button>
+              </div>
+            </form>
           </motion.div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -348,9 +340,5 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
 }
 
 function FormLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="text-sm block mb-3 font-medium">
-      {children}
-    </label>
-  );
+  return <label className="text-sm block mb-3 font-medium">{children}</label>;
 }

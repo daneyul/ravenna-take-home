@@ -1,13 +1,13 @@
 import * as Popover from "@radix-ui/react-popover";
-import { useState } from "react";
-import { useSetAtom } from "jotai";
 import { clsx } from "clsx";
+import { useSetAtom } from "jotai";
+import { useState } from "react";
 import { toast } from "sonner";
+import { updateTicketAtom } from "@/atoms";
 import type { Priority, Ticket } from "@/types/ticket";
-import { updateTicketAtom } from "@/atoms/tickets";
 import HighPriority from "./icons/HighPriority";
-import MediumPriority from "./icons/MediumPriority";
 import LowPriority from "./icons/LowPriority";
+import MediumPriority from "./icons/MediumPriority";
 import SeverePriority from "./icons/SeverePriority";
 import { PopoverContent } from "./PopoverContent";
 
@@ -28,7 +28,13 @@ const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: "none", label: "None" },
 ];
 
-function PriorityIconContent({ priority, size = "sm" }: { priority: Priority; size?: "sm" | "md" | "lg" }) {
+function PriorityIconContent({
+  priority,
+  size = "sm",
+}: {
+  priority: Priority;
+  size?: "sm" | "md" | "lg";
+}) {
   const sizeClass = size === "sm" ? "w-5 h-5" : size === "md" ? "w-6 h-6" : "w-7 h-7";
 
   if (priority === "none") {
@@ -59,7 +65,14 @@ function PriorityIconContent({ priority, size = "sm" }: { priority: Priority; si
   );
 }
 
-export function PriorityIcon({ priority, ticket, size = "sm", interactive = false, onClick, onPriorityChange }: PriorityIconProps) {
+export function PriorityIcon({
+  priority,
+  ticket,
+  size = "sm",
+  interactive = false,
+  onClick,
+  onPriorityChange,
+}: PriorityIconProps) {
   const [open, setOpen] = useState(false);
   const updateTicket = useSetAtom(updateTicketAtom);
 
@@ -74,7 +87,8 @@ export function PriorityIcon({ priority, ticket, size = "sm", interactive = fals
         ...ticket,
         priority: newPriority,
       });
-      const priorityLabel = PRIORITY_OPTIONS.find(p => p.value === newPriority)?.label || newPriority;
+      const priorityLabel =
+        PRIORITY_OPTIONS.find((p) => p.value === newPriority)?.label || newPriority;
       toast.success(`Priority changed to ${priorityLabel}`);
       setOpen(false);
     }
@@ -114,9 +128,7 @@ export function PriorityIcon({ priority, ticket, size = "sm", interactive = fals
               >
                 <PriorityIconContent priority={option.value} size="sm" />
                 <span className="text-sm">{option.label}</span>
-                {isSelected && (
-                  <span className="ml-auto text-sm opacity-50">✓</span>
-                )}
+                {isSelected && <span className="ml-auto text-sm opacity-50">✓</span>}
               </button>
             );
           })}

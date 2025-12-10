@@ -1,5 +1,5 @@
-import type { Ticket, Priority } from "@/types/ticket";
 import type { SortDirection } from "@/atoms";
+import type { Priority, Ticket } from "@/types/ticket";
 
 const PRIORITY_ORDER: Record<Priority, number> = {
   severe: 0,

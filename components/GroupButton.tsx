@@ -1,13 +1,12 @@
+import { CheckIcon, ChevronDownIcon, PersonIcon } from "@radix-ui/react-icons";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons";
-import { useAtom } from "jotai";
 import { clsx } from "clsx";
-import { groupByAtom, type GroupBy } from "@/atoms/tickets";
-import { BORDER_STYLES, BUTTON_STYLES } from "@/lib/styles";
-import { ProgressRing } from "./ProgressRing";
-import { PersonIcon } from "@radix-ui/react-icons";
-import { PriorityIcon } from "./PriorityIcon";
+import { useAtom } from "jotai";
 import { motion } from "motion/react";
+import { type GroupBy, groupByAtom } from "@/atoms";
+import { BUTTON_STYLES } from "@/lib/styles";
+import { PriorityIcon } from "./PriorityIcon";
+import { ProgressRing } from "./ProgressRing";
 
 const GROUP_OPTIONS: { value: GroupBy; label: string; icon: React.ReactNode }[] = [
   {
@@ -46,12 +45,13 @@ export function GroupButton() {
     <Select.Root value={groupBy} onValueChange={(value) => setGroupBy(value as GroupBy)}>
       <Select.Trigger asChild>
         <button
+          type="button"
           className={clsx(
             "p-2 rounded cursor-pointer bg-white flex items-center gap-2",
             BUTTON_STYLES.base,
             "transition-all duration-150",
             "focus:outline-none focus:ring-1 focus:ring-blue-400",
-            "hover:bg-stone-100",
+            "hover:bg-stone-100"
           )}
           aria-label="Group by"
         >
@@ -67,7 +67,7 @@ export function GroupButton() {
           sideOffset={4}
           className="bg-white rounded-md shadow-lg border border-stone-200 overflow-hidden z-50"
         >
-            <motion.div
+          <motion.div
             initial={{ scale: 0.97, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.97, opacity: 0 }}
@@ -77,25 +77,25 @@ export function GroupButton() {
             }}
             style={{ transformOrigin: "top center" }}
           >
-          <Select.Viewport className="p-1">
-            {GROUP_OPTIONS.map((option) => (
-              <Select.Item
-                key={option.value}
-                value={option.value}
-                className={clsx(
-                  "px-3 py-2 text-sm rounded cursor-pointer outline-none",
-                  "hover:bg-stone-100 focus:bg-stone-100",
-                  "flex items-center gap-2 relative pr-8"
-                )}
-              >
-                {option.icon}
-                <Select.ItemText>{option.label}</Select.ItemText>
-                <Select.ItemIndicator className="absolute right-2">
-                  <CheckIcon className="w-4 h-4" />
-                </Select.ItemIndicator>
-              </Select.Item>
-          ))}
-          </Select.Viewport>
+            <Select.Viewport className="p-1">
+              {GROUP_OPTIONS.map((option) => (
+                <Select.Item
+                  key={option.value}
+                  value={option.value}
+                  className={clsx(
+                    "px-3 py-2 text-sm rounded cursor-pointer outline-none",
+                    "hover:bg-stone-100 focus:bg-stone-100",
+                    "flex items-center gap-2 relative pr-8"
+                  )}
+                >
+                  {option.icon}
+                  <Select.ItemText>{option.label}</Select.ItemText>
+                  <Select.ItemIndicator className="absolute right-2">
+                    <CheckIcon className="w-4 h-4" />
+                  </Select.ItemIndicator>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
           </motion.div>
         </Select.Content>
       </Select.Portal>

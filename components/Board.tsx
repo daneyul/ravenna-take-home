@@ -12,14 +12,14 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 import {
+  groupByAtom,
   groupColumnsAtom,
   ticketsByGroupAtom,
   updateTicketGroupAtom,
-  groupByAtom,
-} from "@/atoms/tickets";
+} from "@/atoms";
 import type { Ticket } from "@/types/ticket";
 import { COLUMN_TYPE, TICKET_TYPE } from "@/types/ticket";
 import { Card } from "./Card";
@@ -36,9 +36,7 @@ export function Board() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsMounted(true);
-    }, 100);
+    setIsMounted(true);
   }, []);
 
   const dragSensors = useSensors(
@@ -101,9 +99,10 @@ export function Board() {
       const ticketsInColumn = ticketsByGroup.get(newGroupValue) || [];
 
       // Add to end of column
-      const newOrder = currentGroupValue === newGroupValue
-        ? ticket.order  // Same column, keep order
-        : ticketsInColumn.length;  // New column, add to end
+      const newOrder =
+        currentGroupValue === newGroupValue
+          ? ticket.order // Same column, keep order
+          : ticketsInColumn.length; // New column, add to end
 
       if (currentGroupValue !== newGroupValue || ticket.order !== newOrder) {
         updateTicketGroup({ ticketId, groupValue: newGroupValue, newOrder });
@@ -127,7 +126,8 @@ export function Board() {
           newGroupValue = overTicket.priority;
           break;
         case "label":
-          newGroupValue = overTicket.labels.length > 0 ? overTicket.labels[0].id : "no-labels";
+          newGroupValue =
+            overTicket.labels.length > 0 ? overTicket.labels[0].id : "no-labels";
           break;
         default:
           newGroupValue = overTicket.status;
@@ -142,9 +142,16 @@ export function Board() {
     }
   };
 
-  if (!isMounted) {
-    return (
-      <div className="flex-1 overflow-hidden">
+  // Check if there are any tickets at all
+  const hasAnyTickets = Array.from(ticketsByGroup.values()).some(
+    (tickets) => tickets.length > 0
+  );
+
+  const content = (
+    <div className="flex-1 overflow-hidden">
+      {!hasAnyTickets ? (
+        <EmptyState />
+      ) : (
         <div className="h-full overflow-x-auto overflow-y-auto">
           <div className="flex gap-4 p-6 pb-8 min-h-full">
             {groupColumns
@@ -152,26 +159,41 @@ export function Board() {
                 const tickets = ticketsByGroup.get(column.id) || [];
                 return tickets.length > 0;
               })
-              .map((column) => {
+              .map((column, columnIndex) => {
+                const tickets = ticketsByGroup.get(column.id) || [];
+                const isOver =
+                  overId === column.id || tickets.some((t) => t.id === overId);
                 return (
-                  <div key={column.id} className="shrink-0 w-80 flex flex-col opacity-0">
-                    <div className="flex items-center gap-2 mb-4 px-1">
-                      <h2 className="font-medium text-sm">{column.name}</h2>
-                    </div>
-                  </div>
+                  <motion.div
+                    key={column.id}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.2,
+                      delay: columnIndex * 0.1,
+                      ease: "easeOut",
+                    }}
+                  >
+                    <Column
+                      column={column}
+                      tickets={tickets}
+                      isOver={isOver}
+                      columnIndex={columnIndex}
+                    />
+                  </motion.div>
                 );
               })}
+            {/* spacer to ensure padding after last column when scrolling */}
             <div className="shrink-0 w-2" aria-hidden="true" />
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Check if there are any tickets at all
-  const hasAnyTickets = Array.from(ticketsByGroup.values()).some(
-    (tickets) => tickets.length > 0
+      )}
+    </div>
   );
+
+  if (!isMounted) {
+    return content;
+  }
 
   return (
     <DndContext
@@ -181,47 +203,11 @@ export function Board() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex-1 overflow-hidden">
-        {!hasAnyTickets ? (
-          <EmptyState />
-        ) : (
-          <div className="h-full overflow-x-auto overflow-y-auto">
-            <div className="flex gap-4 p-6 pb-8 min-h-full">
-              {groupColumns
-                .filter((column) => {
-                  const tickets = ticketsByGroup.get(column.id) || [];
-                  return tickets.length > 0;
-                })
-                .map((column, columnIndex) => {
-                  const tickets = ticketsByGroup.get(column.id) || [];
-                  const isOver = overId === column.id || tickets.some(t => t.id === overId);
-                  return (
-                    <motion.div
-                      key={column.id}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.2,
-                        delay: columnIndex * 0.1,
-                        ease: "easeOut",
-                      }}
-                    >
-                      <Column column={column} tickets={tickets} isOver={isOver} columnIndex={columnIndex} />
-                    </motion.div>
-                  );
-                })}
-              {/* spacer to ensure padding after last column when scrolling */}
-              <div className="shrink-0 w-2" aria-hidden="true" />
-            </div>
-          </div>
-        )}
-      </div>
+      {content}
 
       <DragOverlay>
         {activeTicket ? (
-          <div
-            style={{ transform: "scale(0.95)", cursor: "grabbing" }}
-          >
+          <div style={{ transform: "scale(0.95)", cursor: "grabbing" }}>
             <Card ticket={activeTicket} isPreview />
           </div>
         ) : null}

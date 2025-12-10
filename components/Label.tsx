@@ -1,11 +1,11 @@
 import * as Popover from "@radix-ui/react-popover";
-import { useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 import { clsx } from "clsx";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useState } from "react";
 import { toast } from "sonner";
-import { labelsAtom, updateTicketAtom } from "@/atoms/tickets";
-import type { Label as LabelType, Ticket } from "@/types/ticket";
+import { labelsAtom, updateTicketAtom } from "@/atoms";
 import { BORDER_STYLES } from "@/lib/styles";
+import type { Label as LabelType, Ticket } from "@/types/ticket";
 import { PopoverContent } from "./PopoverContent";
 
 interface LabelProps {
@@ -38,7 +38,10 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
 
   const content = (
     <div
-      className={clsx("rounded-sm flex items-center px-2 py-1.5 hover:bg-stone-100 transition-all duration-150", BORDER_STYLES.interactive)}
+      className={clsx(
+        "rounded-sm flex items-center px-2 py-1.5 hover:bg-stone-100 transition-all duration-150",
+        BORDER_STYLES.interactive
+      )}
     >
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: label.color }} />
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs">
@@ -81,9 +84,7 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
                   style={{ backgroundColor: l.color }}
                 />
                 <span className="text-xs">{l.name}</span>
-                {isSelected && (
-                  <span className="ml-auto text-xs opacity-70">✓</span>
-                )}
+                {isSelected && <span className="ml-auto text-xs opacity-70">✓</span>}
               </button>
             );
           })}

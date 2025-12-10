@@ -1,11 +1,10 @@
 "use client";
 
-import * as Popover from "@radix-ui/react-popover";
 import { PersonIcon } from "@radix-ui/react-icons";
-import { useState, useEffect, useRef } from "react";
 import { clsx } from "clsx";
-import type { Requester } from "@/types/ticket";
+import { useEffect, useRef, useState } from "react";
 import { BORDER_STYLES } from "@/lib/styles";
+import type { Requester } from "@/types/ticket";
 
 interface RequesterComboboxProps {
   requesters: Requester[];
@@ -85,39 +84,35 @@ export function RequesterCombobox({
   };
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Anchor asChild>
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (value && filteredRequesters.length > 0) {
-              setOpen(true);
-            }
-          }}
-          className={clsx(
-            "w-full px-3 py-2 rounded-md text-sm",
-            BORDER_STYLES.input
-          )}
-          placeholder={placeholder}
-        />
-      </Popover.Anchor>
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onFocus={() => {
+          if (value && filteredRequesters.length > 0) {
+            setOpen(true);
+          }
+        }}
+        onBlur={() => {
+          // Delay to allow click on dropdown item
+          setTimeout(() => setOpen(false), 200);
+        }}
+        className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+        placeholder={placeholder}
+      />
 
       {open && filteredRequesters.length > 0 && (
-        <Popover.Portal>
-          <Popover.Content
-            align="start"
-            sideOffset={4}
-            className={clsx(
-              "bg-white rounded-md shadow-lg w-[var(--radix-popover-trigger-width)] max-h-60 overflow-y-auto z-50",
-              BORDER_STYLES.base
-            )}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            <div className="p-1">
+        <div
+          className={clsx(
+            "absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-50",
+            BORDER_STYLES.base
+          )}
+        >
+          <div className="p-2">
+            <div className="max-h-60 overflow-y-auto">
               {filteredRequesters.map((requester, index) => (
                 <button
                   key={requester.email}
@@ -126,18 +121,14 @@ export function RequesterCombobox({
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={clsx(
                     "w-full px-3 py-2 text-sm text-left rounded flex items-center gap-2 transition-colors duration-150",
-                    index === selectedIndex
-                      ? "bg-stone-100"
-                      : "hover:bg-stone-50"
+                    index === selectedIndex ? "bg-stone-100" : "hover:bg-stone-50"
                   )}
                 >
                   <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center flex-shrink-0">
                     <PersonIcon className="w-3 h-3 opacity-70" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-medium truncate">
-                      {requester.name}
-                    </span>
+                    <span className="font-medium truncate">{requester.name}</span>
                     <span className="text-xs opacity-70 truncate">
                       {requester.email}
                     </span>
@@ -145,9 +136,9 @@ export function RequesterCombobox({
                 </button>
               ))}
             </div>
-          </Popover.Content>
-        </Popover.Portal>
+          </div>
+        </div>
       )}
-    </Popover.Root>
+    </div>
   );
 }
