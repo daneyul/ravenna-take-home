@@ -1,3 +1,5 @@
+import { clsx } from "clsx";
+
 export default function NavItem({
   icon,
   label,
@@ -7,26 +9,18 @@ export default function NavItem({
   label: string;
   active?: boolean;
 }) {
-  const activeButtonClasses = "bg-black/5";
-  const hoverButtonClasses = "hover:bg-black/3";
-
-  const activeTextClasses = "opacity-100";
-  const inactiveTextClasses = "opacity-60";
-
   return (
     <button
-      className={`
-        flex items-center gap-3 px-3 py-2 rounded-sm text-sm
-        transition-colors duration-150
-        ${
-          active
-            ? activeButtonClasses
-            : hoverButtonClasses
-        }
-      `}
+      className={clsx(
+        "flex items-center gap-3 px-3 py-2 rounded-sm text-sm",
+        "transition-colors duration-150",
+        active
+          ? "bg-stone-200 "
+          : "text-stone-900 opacity-70 hover:bg-stone-100 hover:opacity-100"
+      )}
     >
-      <span className={active ? activeTextClasses : inactiveTextClasses}>{icon}</span>
-      <span className={active ? activeTextClasses : inactiveTextClasses}>{label}</span>
+      <span>{icon}</span>
+      <span>{label}</span>
     </button>
   );
 }

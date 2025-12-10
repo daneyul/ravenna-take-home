@@ -1,14 +1,15 @@
 import * as Popover from "@radix-ui/react-popover";
 import { motion, AnimatePresence } from "motion/react";
 import * as Select from "@radix-ui/react-select";
-import { ChevronDownIcon, MixerHorizontalIcon, Cross2Icon, ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon, MixerHorizontalIcon, Cross2Icon, ArrowLeftIcon, ResetIcon } from "@radix-ui/react-icons";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { statusesAtom, ticketFiltersAtom, labelsAtom, addLabelAtom } from "@/atoms/tickets";
+import { statusesAtom, ticketFiltersAtom, labelsAtom, addLabelAtom, assigneesAtom, requestersAtom } from "@/atoms/tickets";
 import { getStatusColor } from "@/utils/status";
 import { ProgressRing } from "./ProgressRing";
 import { BORDER_STYLES, BUTTON_STYLES } from "@/lib/styles";
+import Button from "./Button";
 
 const LABEL_COLORS = [
   "#3b82f6", // blue
@@ -68,6 +69,8 @@ function SelectItemWrapper({ value, label, color }: SelectItemWrapperProps) {
 export function FilterButton() {
   const statuses = useAtomValue(statusesAtom);
   const labels = useAtomValue(labelsAtom);
+  const assignees = useAtomValue(assigneesAtom);
+  const requesters = useAtomValue(requestersAtom);
   const addLabel = useSetAtom(addLabelAtom);
   const [filters, setFilters] = useAtom(ticketFiltersAtom);
   const [open, setOpen] = useState(false);
@@ -138,6 +141,17 @@ export function FilterButton() {
     setLabelInputValue("");
   };
 
+  const handleClearAll = () => {
+    setFilters({
+      search: "",
+      status: undefined,
+      labels: undefined,
+      assignee: undefined,
+      requester: undefined,
+      requestFor: undefined,
+    });
+  };
+
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
@@ -145,7 +159,9 @@ export function FilterButton() {
           className={clsx(
             "p-2.5 rounded cursor-pointer bg-white",
             BUTTON_STYLES.base,
-            "transition-all duration-150 active:scale-97"
+            "transition-all duration-150",
+            "hover:bg-stone-100",
+            "focus:outline-none focus:ring-1 focus:ring-blue-400"
           )}
           aria-label="Filter tickets"
         >
@@ -164,7 +180,7 @@ export function FilterButton() {
               ease: "easeOut",
             }}
             style={{ transformOrigin: "top center" }}
-            className={clsx("bg-white rounded-md shadow-xs p-4 w-64 z-50 relative", BORDER_STYLES.base)}
+            className={clsx("bg-white rounded-sm shadow-md p-4 w-64 z-50 relative", BORDER_STYLES.base)}
           >
             <Popover.Close asChild>
               <button
@@ -190,7 +206,7 @@ export function FilterButton() {
                     }
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+                    className={clsx("w-full px-3 py-2 rounded-sm text-sm", BORDER_STYLES.input)}
                   />
                   {!filters.search && !isFocused && (
                     <div className="absolute inset-0 px-3 py-2 pointer-events-none overflow-hidden">
@@ -220,7 +236,7 @@ export function FilterButton() {
                   open={selectOpen}
                   onOpenChange={setSelectOpen}
                 >
-                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-md text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
                     <div className="flex items-center gap-2">
                       {selectedColor && filters.status && filters.status !== "all" && (() => {
                         const statusId = filters.status === "waiting-for-vendor" ? "waiting-vendor" : filters.status === "waiting-for-requester" ? "waiting-requester" : filters.status;
@@ -239,7 +255,7 @@ export function FilterButton() {
                     <Select.Icon className="transition-transform duration-150">
                       <ChevronDownIcon 
                         className={clsx(
-                          "w-3 h-3 transition-transform duration-150",
+                          "w-3 h-3 transition-transform duration-150 opacity-70",
                           selectOpen && "rotate-180"
                         )}
                       />
@@ -249,7 +265,7 @@ export function FilterButton() {
                     <Select.Content
                       position="popper"
                       sideOffset={4}
-                      className={clsx("bg-white rounded-md shadow-xs min-w-(--radix-select-trigger-width)] z-50", BORDER_STYLES.base)}
+                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
                     >
                       <Select.Viewport className="p-1">
                         <SelectItemWrapper value="all" label="All statuses" />
@@ -331,11 +347,11 @@ export function FilterButton() {
                         }, 200);
                       }
                     }}
-                    className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+                    className={clsx("w-full px-3 py-2 rounded-sm text-sm", BORDER_STYLES.input)}
                   />
                   {labelDropdownOpen && (
                     <div
-                      className={clsx("absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-xs max-h-48 overflow-y-auto z-50", BORDER_STYLES.base)}
+                      className={clsx("absolute top-full left-0 right-0 mt-1 bg-white rounded-sm shadow-xs max-h-48 overflow-y-auto z-50", BORDER_STYLES.base)}
                       onMouseDown={(e) => e.preventDefault()}
                     >
                       {creatingLabelName ? (
@@ -401,7 +417,7 @@ export function FilterButton() {
                             <button
                               type="button"
                               onClick={() => setCreatingLabelName(labelInputValue)}
-                              className="w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-stone-100 transition-colors duration-150 border-t border-stone-200"
+                              className="w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-stone-100 transition-colors duration-150 border-t border-stone-300"
                             >
                               <span className="opacity-50">Create label</span>
                               <span className="ml-auto text-xs font-medium">
@@ -414,6 +430,116 @@ export function FilterButton() {
                     </div>
                   )}
                 </div>
+              </div>
+              <div>
+                <label className="text-sm block mb-1">Assignee</label>
+                <Select.Root
+                  value={filters.assignee || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, assignee: value === "all" ? undefined : value })
+                  }
+                >
+                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                    <Select.Value placeholder="All assignees" />
+                    <Select.Icon>
+                      <ChevronDownIcon className="w-3 h-3 opacity-70" />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      position="popper"
+                      sideOffset={4}
+                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                    >
+                      <Select.Viewport className="p-1">
+                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.ItemText>All assignees</Select.ItemText>
+                        </Select.Item>
+                        {assignees.map((assignee) => (
+                          <Select.Item key={assignee.email} value={assignee.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                            <Select.ItemText>{assignee.name}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
+              </div>
+              <div>
+                <label className="text-sm block mb-1">Requester</label>
+                <Select.Root
+                  value={filters.requester || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, requester: value === "all" ? undefined : value })
+                  }
+                >
+                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                    <Select.Value placeholder="All requesters" />
+                    <Select.Icon>
+                      <ChevronDownIcon className="w-3 h-3 opacity-70" />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      position="popper"
+                      sideOffset={4}
+                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                    >
+                      <Select.Viewport className="p-1">
+                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.ItemText>All requesters</Select.ItemText>
+                        </Select.Item>
+                        {requesters.map((requester) => (
+                          <Select.Item key={requester.email} value={requester.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                            <Select.ItemText>{requester.name}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
+              </div>
+              <div>
+                <label className="text-sm block mb-1">Request For</label>
+                <Select.Root
+                  value={filters.requestFor || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, requestFor: value === "all" ? undefined : value })
+                  }
+                >
+                  <Select.Trigger className={clsx("w-full px-3 py-2 rounded-sm text-sm flex items-center justify-between", BORDER_STYLES.input)}>
+                    <Select.Value placeholder="All recipients" />
+                    <Select.Icon>
+                      <ChevronDownIcon className="w-3 h-3 opacity-70" />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      position="popper"
+                      sideOffset={4}
+                      className={clsx("bg-white rounded-sm min-w-(--radix-select-trigger-width)] z-50 border border-stone-300 shadow-md")}
+                    >
+                      <Select.Viewport className="p-1">
+                        <Select.Item value="all" className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                          <Select.ItemText>All recipients</Select.ItemText>
+                        </Select.Item>
+                        {requesters.map((requester) => (
+                          <Select.Item key={requester.email} value={requester.email} className="px-3 py-2 text-sm rounded cursor-pointer outline-none hover:bg-stone-100 focus:bg-stone-100">
+                            <Select.ItemText>{requester.name}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
+              </div>
+              <div className="pt-2">
+                <Button
+                  onClick={handleClearAll}
+                  className="w-full justify-center border border-stone-300"
+                >
+                  Clear all filters
+                </Button>
               </div>
             </div>
           </motion.div>

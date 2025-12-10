@@ -87,7 +87,8 @@ body {
   background-clip: content-box;
 }
 
-button:active {
+/* Only apply scale effect to action buttons, not form controls like Select triggers */
+button:not([aria-haspopup]):not([role="combobox"]):not([data-radix-collection-item]):active {
   scale: 0.97;
   transition: scale 0.15s ease-in-out;
 }

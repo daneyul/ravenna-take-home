@@ -38,6 +38,8 @@ export interface TicketFilters {
   status?: string;
   labels?: string[];
   assignee?: string;
+  requester?: string;
+  requestFor?: string;
 }
 
 export const TICKET_TYPE = "ticket";

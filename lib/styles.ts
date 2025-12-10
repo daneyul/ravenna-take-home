@@ -4,7 +4,7 @@
 
 export const BORDER_STYLES = {
   // Standard border
-  base: "border border-stone-200",
+  base: "border border-stone-200 hover:border-stone-300",
 
   // Border with hover effect
   interactive: "border border-stone-200 hover:border-stone-300",

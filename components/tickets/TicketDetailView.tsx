@@ -1,18 +1,33 @@
 "use client";
 
-import { ArrowLeftIcon, PersonIcon } from "@radix-ui/react-icons";
+import {
+  ArrowLeftIcon,
+  DotsVerticalIcon,
+  PersonIcon,
+  PlusIcon,
+  TrashIcon,
+  EnvelopeClosedIcon,
+} from "@radix-ui/react-icons";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, startTransition } from "react";
 import { toast } from "sonner";
-import { statusesAtom, assigneesAtom, updateTicketAtom } from "@/atoms/tickets";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  statusesAtom,
+  assigneesAtom,
+  labelsAtom,
+  updateTicketAtom,
+  deleteTicketAtom,
+} from "@/atoms/tickets";
 import type { Ticket, Requester } from "@/types/ticket";
 import { StatusDropdown } from "./StatusDropdown";
 import { AssigneeDropdown } from "./AssigneeDropdown";
 import { Label } from "../Label";
 import { PriorityIcon } from "../PriorityIcon";
 import { BORDER_STYLES } from "@/lib/styles";
+import * as Popover from "@radix-ui/react-popover";
 
 interface TicketDetailViewProps {
   ticket: Ticket;
@@ -22,16 +37,26 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
   const router = useRouter();
   const statuses = useAtomValue(statusesAtom);
   const assignees = useAtomValue(assigneesAtom);
+  const allLabels = useAtomValue(labelsAtom);
   const updateTicket = useSetAtom(updateTicketAtom);
+  const deleteTicket = useSetAtom(deleteTicketAtom);
   const currentStatus = statuses.find((s) => s.id === ticket.status);
 
   const [description, setDescription] = useState(ticket.description || "");
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [shouldAnimateDelete, setShouldAnimateDelete] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const prevTicketIdRef = useRef<string>(ticket.id);
 
-  // Update local state when ticket changes
+  // Reset local state when ticket ID changes
   useEffect(() => {
-    setDescription(ticket.description || "");
-  }, [ticket.description]);
+    if (prevTicketIdRef.current !== ticket.id) {
+      prevTicketIdRef.current = ticket.id;
+      startTransition(() => {
+        setDescription(ticket.description || "");
+      });
+    }
+  }, [ticket.id, ticket.description]);
 
   const handleStatusChange = (newStatus: string) => {
     updateTicket({
@@ -46,10 +71,14 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       ...ticket,
       assignee: newAssignee,
     });
-    toast.success(newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned");
+    toast.success(
+      newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned"
+    );
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     const newDescription = e.target.value;
     setDescription(newDescription);
 
@@ -68,7 +97,39 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
     }, 1000);
   };
 
-  // Cleanup timer on unmount
+  const handleToggleLabel = (labelId: string) => {
+    const currentLabelIds = ticket.labels.map((l) => l.id);
+    const hasLabel = currentLabelIds.includes(labelId);
+    const labelName = allLabels.find((l) => l.id === labelId)?.name;
+
+    const newLabels = hasLabel
+      ? ticket.labels.filter((l) => l.id !== labelId)
+      : [...ticket.labels, allLabels.find((l) => l.id === labelId)!].filter(
+          Boolean
+        );
+
+    updateTicket({
+      ...ticket,
+      labels: newLabels,
+    });
+
+    toast.success(
+      hasLabel ? `Removed ${labelName} label` : `Added ${labelName} label`
+    );
+  };
+
+  const handleDeleteTicket = () => {
+    if (!deleteConfirm) {
+      setShouldAnimateDelete(true);
+      setDeleteConfirm(true);
+      return;
+    }
+
+    deleteTicket(ticket.id);
+    toast.success("Ticket deleted");
+    router.push("/tickets");
+  };
+
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -79,7 +140,6 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Header */}
       <header className="flex items-center gap-4 px-6 py-4 border-b border-stone-200">
         <button
           onClick={() => router.push("/tickets")}
@@ -94,18 +154,83 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
         <span className="text-sm font-medium">Ticket {ticket.id}</span>
       </header>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          {/* Title */}
+        <div className="max-w-3xl mx-auto px-6 py-8 pb-16">
           <div className="flex items-center gap-2 mb-6">
-          <PriorityIcon priority={ticket.priority} size="lg" interactive ticket={ticket} />
-          <h1 className="text-2xl font-medium">{ticket.title}</h1>
+            <PriorityIcon
+              priority={ticket.priority}
+              size="lg"
+              interactive
+              ticket={ticket}
+            />
+            <h1 className="text-2xl font-medium">{ticket.title}</h1>
+            <Popover.Root
+              onOpenChange={(open) => {
+                if (!open) {
+                  setDeleteConfirm(false);
+                  setShouldAnimateDelete(false);
+                }
+              }}
+            >
+              <Popover.Trigger asChild>
+                <button
+                  type="button"
+                  className="w-[24px] h-[24px] bg-white p-1 cursor-pointer border border-stone-300 rounded-sm hover:border-stone-300 hover:shadow-sm transition-colors duration-150 ml-auto flex items-center justify-center"
+                  aria-label="Ticket options"
+                >
+                  <DotsVerticalIcon className="w-4 h-4" />
+                </button>
+              </Popover.Trigger>
+
+              <Popover.Portal>
+                <Popover.Content
+                  align="end"
+                  sideOffset={4}
+                  className={clsx(
+                    "bg-white rounded-md shadow-lg z-50",
+                    BORDER_STYLES.base
+                  )}
+                >
+                  <div
+                    className="p-1"
+                  >
+                    <motion.button
+                      layout
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      type="button"
+                      onClick={handleDeleteTicket}
+                      className={clsx(
+                        "w-48 px-3 py-2 text-sm text-left rounded flex items-center gap-2 transition-colors duration-150",
+                        "hover:bg-red-50 text-red-600 cursor-pointer"
+                      )}
+                    >
+                      <TrashIcon className="w-4 h-4 shrink-0" />
+                      <div className="relative overflow-hidden">
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.span
+                            key={deleteConfirm ? "confirm" : "delete"}
+                            {...(shouldAnimateDelete && {
+                              initial: { opacity: 0, y: 10 },
+                              exit: { opacity: 0, y: -10 },
+                            })}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.15, ease: "easeInOut" }}
+                            className="inline-block"
+                          >
+                            {deleteConfirm
+                              ? "Click again to confirm"
+                              : "Delete ticket"}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    </motion.button>
+                  </div>
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
           </div>
 
-          {/* Metadata grid */}
           <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-stone-200">
-            {/* Status */}
             <div>
               <DetailLabel>Status</DetailLabel>
               <StatusDropdown
@@ -115,7 +240,6 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
               />
             </div>
 
-            {/* Assignee */}
             <div>
               <DetailLabel>Assignee</DetailLabel>
               <AssigneeDropdown
@@ -125,17 +249,14 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
               />
             </div>
 
-            {/* Requester */}
             <div>
-              <DetailLabel>Requester</DetailLabel>
+              <DetailLabel>Requested By</DetailLabel>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-stone-300 flex items-center justify-center">
                   <PersonIcon className="w-3 h-3 opacity-70" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm">
-                    {ticket.requester.name}
-                  </span>
+                  <span className="text-sm">{ticket.requester.name}</span>
                   <span className="text-xs opacity-70">
                     {ticket.requester.email}
                   </span>
@@ -143,19 +264,14 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
               </div>
             </div>
 
-            {/* Request For */}
             <div>
-              <DetailLabel>
-                Request For
-              </DetailLabel>
+              <DetailLabel>Requested For</DetailLabel>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-stone-300 flex items-center justify-center">
                   <PersonIcon className="w-3 h-3 opacity-70" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm">
-                    {ticket.requestFor.name}
-                  </span>
+                  <span className="text-sm">{ticket.requestFor.name}</span>
                   <span className="text-xs opacity-70">
                     {ticket.requestFor.email}
                   </span>
@@ -164,21 +280,35 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
             </div>
           </div>
 
-          {/* Created At */}
-          <div className="mb-6">
-            <DetailLabel>Created</DetailLabel>
-            <div className="text-sm opacity-70">
-              {new Date(ticket.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div>
+              <DetailLabel>Created At</DetailLabel>
+              <div className="text-sm opacity-70">
+                {new Date(ticket.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
+            <div>
+              <DetailLabel>Created By</DetailLabel>
+              <button
+                type="button"
+                className={clsx(
+                  "flex items-center gap-2 px-3 py-2 rounded-md bg-white text-sm",
+                  BORDER_STYLES.interactive,
+                  "transition-all duration-150 hover:bg-stone-50"
+                )}
+              >
+                <EnvelopeClosedIcon className="w-4 h-4 opacity-70" />
+                <span>Subject: Issue</span>
+              </button>
             </div>
           </div>
 
-          {/* Description */}
           <div className="mb-8">
             <label className="text-sm block mb-3 font-medium">
               Description
@@ -195,17 +325,81 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
             />
           </div>
 
-          {/* Labels */}
-          {ticket.labels && ticket.labels.length > 0 && (
-            <div>
-              <DetailLabel>Labels</DetailLabel>
-              <div className="flex flex-wrap gap-1.5">
-                {ticket.labels.map((label) => (
-                  <Label key={label.id} label={label} ticket={ticket} interactive />
-                ))}
-              </div>
+          <div>
+            <DetailLabel>Labels</DetailLabel>
+            <div className="flex flex-wrap gap-1.5">
+              {ticket.labels.map((label) => (
+                <Label
+                  key={label.id}
+                  label={label}
+                  ticket={ticket}
+                  interactive
+                />
+              ))}
+
+              {/* Add Label Button */}
+              <Popover.Root>
+                <Popover.Trigger asChild>
+                  <button
+                    type="button"
+                    className={clsx(
+                      "rounded-sm flex cursor-pointer items-center justify-center px-2 py-1.5 bg-white transition-all duration-150 hover:bg-stone-100",
+                      BORDER_STYLES.base
+                    )}
+                    aria-label="Add label"
+                  >
+                    <PlusIcon className="w-3 h-3 opacity-70" />
+                  </button>
+                </Popover.Trigger>
+
+                <Popover.Portal>
+                  <Popover.Content
+                    align="start"
+                    sideOffset={4}
+                    className={clsx(
+                      "bg-white rounded-md shadow-lg w-48 z-50",
+                      BORDER_STYLES.base
+                    )}
+                  >
+                    <div className="p-2">
+                      <div className="text-xs opacity-70 mb-2 px-2">
+                        Add labels
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {allLabels.map((label) => {
+                          const isSelected = ticket.labels.some(
+                            (l) => l.id === label.id
+                          );
+                          return (
+                            <button
+                              key={label.id}
+                              type="button"
+                              onClick={() => handleToggleLabel(label.id)}
+                              className={clsx(
+                                "w-full px-2 py-1.5 text-sm flex items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
+                                isSelected && "bg-stone-100"
+                              )}
+                            >
+                              <span
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: label.color }}
+                              />
+                              <span className="text-xs">{label.name}</span>
+                              {isSelected && (
+                                <span className="ml-auto text-xs opacity-50">
+                                  ✓
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
@@ -213,9 +407,5 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 }
 
 function DetailLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="text-sm block mb-3 font-medium">
-      {children}
-    </label>
-  )
+  return <label className="text-sm block mb-3 font-medium">{children}</label>;
 }

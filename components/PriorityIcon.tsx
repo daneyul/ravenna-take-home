@@ -17,6 +17,7 @@ interface PriorityIconProps {
   size?: "sm" | "md" | "lg";
   interactive?: boolean;
   onClick?: (e: React.MouseEvent) => void;
+  onPriorityChange?: (priority: Priority) => void;
 }
 
 const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
@@ -28,7 +29,7 @@ const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
 ];
 
 function PriorityIconContent({ priority, size = "sm" }: { priority: Priority; size?: "sm" | "md" | "lg" }) {
-  const sizeClass = size === "sm" ? "w-4 h-4" : size === "md" ? "w-5 h-5" : "w-6 h-6";
+  const sizeClass = size === "sm" ? "w-5 h-5" : size === "md" ? "w-6 h-6" : "w-7 h-7";
 
   if (priority === "none") {
     return (
@@ -58,12 +59,17 @@ function PriorityIconContent({ priority, size = "sm" }: { priority: Priority; si
   );
 }
 
-export function PriorityIcon({ priority, ticket, size = "sm", interactive = false, onClick }: PriorityIconProps) {
+export function PriorityIcon({ priority, ticket, size = "sm", interactive = false, onClick, onPriorityChange }: PriorityIconProps) {
   const [open, setOpen] = useState(false);
   const updateTicket = useSetAtom(updateTicketAtom);
 
   const handleChangePriority = (newPriority: Priority) => {
-    if (ticket) {
+    if (onPriorityChange) {
+      // Use callback if provided (for forms/dialogs)
+      onPriorityChange(newPriority);
+      setOpen(false);
+    } else if (ticket) {
+      // Otherwise update ticket via atom
       updateTicket({
         ...ticket,
         priority: newPriority,
@@ -76,7 +82,7 @@ export function PriorityIcon({ priority, ticket, size = "sm", interactive = fals
 
   const content = <PriorityIconContent priority={priority} size={size} />;
 
-  if (!interactive || !ticket) {
+  if (!interactive) {
     return content;
   }
 
@@ -85,7 +91,7 @@ export function PriorityIcon({ priority, ticket, size = "sm", interactive = fals
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="inline-flex items-center transition-all duration-150 opacity-80 hover:opacity-100 hover:shadow-xs cursor-pointer"
+          className="inline-flex bg-white items-center transition-all duration-150 opacity-80 hover:opacity-100 hover:shadow-xs cursor-pointer"
           onClick={onClick}
         >
           {content}

@@ -9,7 +9,7 @@ export default function Button({
 }: {
   children: React.ReactNode;
   onClick: () => void;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -21,12 +21,13 @@ export default function Button({
         "text-sm font-medium",
         "cursor-pointer",
         "bg-white",
+        "hover:bg-stone-100",
         BUTTON_STYLES.base,
         className
       )}
       onClick={onClick}
     >
-      {icon}
+      {icon && icon}
       {children}
     </button>
   );

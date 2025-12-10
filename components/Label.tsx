@@ -38,7 +38,7 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
 
   const content = (
     <div
-      className={clsx("rounded-sm flex items-center px-2 py-1.5 bg-white", BORDER_STYLES.base)}
+      className={clsx("rounded-sm flex items-center px-2 py-1.5 hover:bg-stone-100 transition-all duration-150", BORDER_STYLES.interactive)}
     >
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: label.color }} />
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs">
@@ -56,7 +56,7 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="transition-all duration-150 hover:opacity-80 cursor-pointer"
+          className="transition-all duration-150 cursor-pointer bg-white hover:bg-stone-100"
         >
           {content}
         </button>
@@ -73,7 +73,7 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
                 onClick={() => handleToggleLabel(l.id)}
                 className={clsx(
                   "w-full px-2 py-1.5 text-sm flex items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
-                  isSelected && "bg-stone-50"
+                  isSelected && "bg-stone-100"
                 )}
               >
                 <span
@@ -82,7 +82,7 @@ export function Label({ label, ticket, interactive = false }: LabelProps) {
                 />
                 <span className="text-xs">{l.name}</span>
                 {isSelected && (
-                  <span className="ml-auto text-xs opacity-50">✓</span>
+                  <span className="ml-auto text-xs opacity-70">✓</span>
                 )}
               </button>
             );
