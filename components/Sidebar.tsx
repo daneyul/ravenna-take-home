@@ -25,7 +25,7 @@ export function Sidebar() {
       </nav>
 
       <div className="flex flex-col gap-2 mt-auto pb-4">
-        <label className="text-xs font-medium opacity-70 px-2">Data Density</label>
+        <div className="text-xs font-medium opacity-70 px-2">Data Density</div>
         <div className="flex gap-1">
           <DensityButton active={density === "empty"} onClick={() => setDensity("empty")}>
             Empty

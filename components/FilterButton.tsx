@@ -421,7 +421,7 @@ export function FilterButton() {
                             <ArrowLeftIcon className="w-3.5 h-3.5" />
                           </button>
                           <div className="text-xs opacity-70 mb-2 text-center">
-                            Choose a color for "{creatingLabelName}"
+                            Choose a color for &quot;{creatingLabelName}&quot;
                           </div>
                           <div className="grid grid-cols-4 gap-2">
                             {LABEL_COLORS.map((color) => (
@@ -477,7 +477,7 @@ export function FilterButton() {
                             >
                               <span className="opacity-50">Create label</span>
                               <span className="ml-auto text-xs font-medium">
-                                "{labelInputValue}"
+                                &quot;{labelInputValue}&quot;
                               </span>
                             </button>
                           )}
@@ -488,7 +488,9 @@ export function FilterButton() {
                 </div>
               </div>
               <div>
-                <label className="text-sm block mb-1">Assignee</label>
+                <label htmlFor="assignee" className="text-sm block mb-1">
+                  Assignee
+                </label>
                 <Select.Root
                   value={filters.assignee || "all"}
                   onValueChange={(value) =>
@@ -539,7 +541,9 @@ export function FilterButton() {
                 </Select.Root>
               </div>
               <div>
-                <label className="text-sm block mb-1">Requester</label>
+                <label htmlFor="requester" className="text-sm block mb-1">
+                  Requester
+                </label>
                 <Select.Root
                   value={filters.requester || "all"}
                   onValueChange={(value) =>
@@ -590,7 +594,9 @@ export function FilterButton() {
                 </Select.Root>
               </div>
               <div>
-                <label className="text-sm block mb-1">Request For</label>
+                <label htmlFor="requestFor" className="text-sm block mb-1">
+                  Request For
+                </label>
                 <Select.Root
                   value={filters.requestFor || "all"}
                   onValueChange={(value) =>

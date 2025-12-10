@@ -25,6 +25,7 @@ export function RequesterCombobox({
   const [filteredRequesters, setFilteredRequesters] = useState<Requester[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isTypingRef = useRef(false);
 
   useEffect(() => {
     if (!value) {
@@ -43,11 +44,15 @@ export function RequesterCombobox({
     });
 
     setFilteredRequesters(filtered);
-    setOpen(filtered.length > 0);
+    // Only open if user is actively typing
+    if (isTypingRef.current) {
+      setOpen(filtered.length > 0);
+    }
     setSelectedIndex(0);
   }, [value, requesters, type]);
 
   const handleSelect = (requester: Requester) => {
+    isTypingRef.current = false;
     if (type === "name") {
       onChange(requester.name, requester);
     } else {
@@ -89,18 +94,19 @@ export function RequesterCombobox({
         ref={inputRef}
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onFocus={() => {
-          if (value && filteredRequesters.length > 0) {
-            setOpen(true);
-          }
+        onChange={(e) => {
+          isTypingRef.current = true;
+          onChange(e.target.value);
         }}
+        onKeyDown={handleKeyDown}
         onBlur={() => {
-          // Delay to allow click on dropdown item
+          isTypingRef.current = false;
           setTimeout(() => setOpen(false), 200);
         }}
-        className={clsx("w-full px-3 py-2 rounded-md text-sm", BORDER_STYLES.input)}
+        className={clsx(
+          "w-full px-3 py-2 rounded-md text-sm bg-white",
+          BORDER_STYLES.input
+        )}
         placeholder={placeholder}
       />
 
@@ -124,14 +130,12 @@ export function RequesterCombobox({
                     index === selectedIndex ? "bg-stone-100" : "hover:bg-stone-50"
                   )}
                 >
-                  <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center shrink-0">
                     <PersonIcon className="w-3 h-3 opacity-70" />
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="font-medium truncate">{requester.name}</span>
-                    <span className="text-xs opacity-70 truncate">
-                      {requester.email}
-                    </span>
+                    <span className="text-xs opacity-70 truncate">{requester.email}</span>
                   </div>
                 </button>
               ))}

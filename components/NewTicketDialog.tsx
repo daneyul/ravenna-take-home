@@ -340,5 +340,5 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
 }
 
 function FormLabel({ children }: { children: React.ReactNode }) {
-  return <label className="text-sm block mb-3 font-medium">{children}</label>;
+  return <div className="text-sm block mb-3 font-medium">{children}</div>;
 }

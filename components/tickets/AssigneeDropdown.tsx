@@ -29,9 +29,9 @@ export function AssigneeDropdown({
         <button
           type="button"
           className={clsx(
-            "flex items-center gap-2 px-3 py-2 rounded-md bg-white hover:bg-stone-100",
+            "flex items-center gap-2 px-3 py-2 rounded-md bg-white hover:bg-stone-100 h-[40px]",
             BORDER_STYLES.interactive,
-            "transition-all duration-150 text-xs cursor-pointer"
+            "transition-all duration-150 text-sm cursor-pointer"
           )}
         >
           {currentAssignee ? (

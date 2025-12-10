@@ -4,7 +4,6 @@ import {
   ArrowLeftIcon,
   DotsVerticalIcon,
   EnvelopeClosedIcon,
-  PersonIcon,
   PlusIcon,
   TrashIcon,
 } from "@radix-ui/react-icons";
@@ -46,9 +45,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
   const currentStatus = statuses.find((s) => s.id === ticket.status);
 
   const [description, setDescription] = useState(ticket.description || "");
-  const [requesterName, setRequesterName] = useState(ticket.requester.name);
   const [requesterEmail, setRequesterEmail] = useState(ticket.requester.email);
-  const [requestForName, setRequestForName] = useState(ticket.requestFor.name);
   const [requestForEmail, setRequestForEmail] = useState(ticket.requestFor.email);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [shouldAnimateDelete, setShouldAnimateDelete] = useState(false);
@@ -61,9 +58,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       prevTicketIdRef.current = ticket.id;
       startTransition(() => {
         setDescription(ticket.description || "");
-        setRequesterName(ticket.requester.name);
         setRequesterEmail(ticket.requester.email);
-        setRequestForName(ticket.requestFor.name);
         setRequestForEmail(ticket.requestFor.email);
       });
     }
@@ -119,6 +114,28 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
     });
 
     toast.success(hasLabel ? `Removed ${labelName} label` : `Added ${labelName} label`);
+  };
+
+  const handleRequesterChange = (value: string, requester?: Requester) => {
+    setRequesterEmail(value);
+    if (requester) {
+      updateTicket({
+        ...ticket,
+        requester: { name: requester.name, email: requester.email },
+      });
+      toast.success("Requester updated");
+    }
+  };
+
+  const handleRequestForChange = (value: string, requester?: Requester) => {
+    setRequestForEmail(value);
+    if (requester) {
+      updateTicket({
+        ...ticket,
+        requestFor: { name: requester.name, email: requester.email },
+      });
+      toast.success("Requested for updated");
+    }
   };
 
   const handleDeleteTicket = () => {
@@ -251,28 +268,24 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
             <div>
               <DetailLabel>Requested By</DetailLabel>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-stone-300 flex items-center justify-center">
-                  <PersonIcon className="w-3 h-3 opacity-70" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm">{ticket.requester.name}</span>
-                  <span className="text-xs opacity-70">{ticket.requester.email}</span>
-                </div>
-              </div>
+              <RequesterCombobox
+                requesters={requesters}
+                value={requesterEmail}
+                onChange={handleRequesterChange}
+                placeholder="Enter email"
+                type="email"
+              />
             </div>
 
             <div>
               <DetailLabel>Requested For</DetailLabel>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-stone-300 flex items-center justify-center">
-                  <PersonIcon className="w-3 h-3 opacity-70" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm">{ticket.requestFor.name}</span>
-                  <span className="text-xs opacity-70">{ticket.requestFor.email}</span>
-                </div>
-              </div>
+              <RequesterCombobox
+                requesters={requesters}
+                value={requestForEmail}
+                onChange={handleRequestForChange}
+                placeholder="Enter email"
+                type="email"
+              />
             </div>
           </div>
 
@@ -306,8 +319,11 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
           </div>
 
           <div className="mb-8">
-            <label className="text-sm block mb-3 font-medium">Description</label>
+            <label htmlFor="description" className="text-sm block mb-3 font-medium">
+              Description
+            </label>
             <textarea
+              id="description"
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Add a description..."
@@ -390,5 +406,5 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 }
 
 function DetailLabel({ children }: { children: React.ReactNode }) {
-  return <label className="text-sm block mb-3 font-medium">{children}</label>;
+  return <div className="text-sm block mb-3 font-medium">{children}</div>;
 }
