@@ -80,7 +80,12 @@ function CardContent({
           </div>
           <span className="text-xs font-medium opacity-50">TICKET-{ticket.id}</span>
         </div>
-        <div>
+        <div
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
