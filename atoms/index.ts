@@ -16,6 +16,7 @@ export type { GroupBy, GroupColumn } from "./grouping";
 export {
   groupByAtom,
   groupColumnsAtom,
+  reorderTicketsInGroupAtom,
   ticketsByGroupAtom,
   ticketsByStatusAtom,
   updateTicketGroupAtom,

@@ -44,12 +44,14 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
   const deleteTicket = useSetAtom(deleteTicketAtom);
   const currentStatus = statuses.find((s) => s.id === ticket.status);
 
+  const [title, setTitle] = useState(ticket.title);
   const [description, setDescription] = useState(ticket.description || "");
   const [requesterEmail, setRequesterEmail] = useState(ticket.requester.email);
   const [requestForEmail, setRequestForEmail] = useState(ticket.requestFor.email);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [shouldAnimateDelete, setShouldAnimateDelete] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const titleDebounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const prevTicketIdRef = useRef<string>(ticket.id);
 
   // Reset local state when ticket ID changes
@@ -57,12 +59,13 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
     if (prevTicketIdRef.current !== ticket.id) {
       prevTicketIdRef.current = ticket.id;
       startTransition(() => {
+        setTitle(ticket.title);
         setDescription(ticket.description || "");
         setRequesterEmail(ticket.requester.email);
         setRequestForEmail(ticket.requestFor.email);
       });
     }
-  }, [ticket.id, ticket.description, ticket.requester, ticket.requestFor]);
+  }, [ticket.id, ticket.title, ticket.description, ticket.requester, ticket.requestFor]);
 
   const handleStatusChange = (newStatus: string) => {
     updateTicket({
@@ -78,6 +81,27 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       assignee: newAssignee,
     });
     toast.success(newAssignee ? `Assigned to ${newAssignee.name}` : "Unassigned");
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+
+    // Clear existing timer
+    if (titleDebounceTimerRef.current) {
+      clearTimeout(titleDebounceTimerRef.current);
+    }
+
+    // Set new timer for debounced save
+    titleDebounceTimerRef.current = setTimeout(() => {
+      if (newTitle.trim()) {
+        updateTicket({
+          ...ticket,
+          title: newTitle,
+        });
+        toast.success("Title saved");
+      }
+    }, 1000);
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -155,6 +179,9 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
+      if (titleDebounceTimerRef.current) {
+        clearTimeout(titleDebounceTimerRef.current);
+      }
     };
   }, []);
 
@@ -202,13 +229,25 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
               },
             }}
           >
+            <input
+              type="text"
+              value={title}
+              onChange={handleTitleChange}
+              className={clsx(
+                "flex-1 text-md px-2 rounded-sm bg-white font-medium outline-none",
+                "transition-all duration-150 h-[38px]",
+                "focus:bg-white focus:px-2 focus:py-1 focus:rounded-md",
+                BORDER_STYLES.input
+              )}
+              placeholder="Ticket title"
+              aria-label="Ticket title"
+            />
             <PriorityIcon
               priority={ticket.priority}
               size="lg"
               interactive
               ticket={ticket}
             />
-            <h1 className="text-2xl font-medium">{ticket.title}</h1>
             <Popover.Root
               onOpenChange={(open) => {
                 if (!open) {
@@ -220,7 +259,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
               <Popover.Trigger asChild>
                 <button
                   type="button"
-                  className="w-[24px] h-[24px] bg-white p-1 cursor-pointer border border-stone-300 rounded-sm hover:border-stone-300 hover:shadow-sm transition-colors duration-150 ml-auto flex items-center justify-center"
+                  className="w-[38px] h-[38px] bg-white p-1 cursor-pointer border border-stone-300 rounded-sm hover:border-stone-300 hover:shadow-sm transition-colors duration-150 ml-auto flex items-center justify-center"
                   aria-label="Ticket options"
                 >
                   <DotsVerticalIcon className="w-4 h-4" />

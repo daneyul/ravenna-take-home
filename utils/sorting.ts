@@ -13,8 +13,12 @@ export function sortTicketsByPriority(
   tickets: Ticket[],
   direction: SortDirection
 ): Ticket[] {
-  if (!direction) return tickets;
+  // null = manual ordering by ticket.order
+  if (!direction) {
+    return [...tickets].sort((a, b) => a.order - b.order);
+  }
 
+  // asc/desc = sort by priority
   return [...tickets].sort((a, b) => {
     const priorityA = PRIORITY_ORDER[a.priority];
     const priorityB = PRIORITY_ORDER[b.priority];

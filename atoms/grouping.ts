@@ -132,15 +132,8 @@ export const ticketsByGroupAtom = atom((get) => {
     grouped.set(groupKey, groupTickets);
   });
 
-  // Sort tickets within each group by priority, then by order
-  const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
-  grouped.forEach((tickets) => {
-    tickets.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      return a.order - b.order;
-    });
-  });
+  // Don't sort here - let the Column component handle sorting based on columnSort state
+  // This allows for both manual ordering (by ticket.order) and priority sorting
 
   return grouped;
 });
@@ -162,15 +155,8 @@ export const ticketsByStatusAtom = atom((get) => {
     grouped.set(ticket.status, statusTickets);
   });
 
-  // Sort tickets within each status by priority, then by order
-  const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
-  grouped.forEach((tickets) => {
-    tickets.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      return a.order - b.order;
-    });
-  });
+  // Don't sort here - let the Column component handle sorting based on columnSort state
+  // This allows for both manual ordering (by ticket.order) and priority sorting
 
   return grouped;
 });
@@ -322,6 +308,35 @@ export const updateTicketGroupAtom = atom(
         return t;
       });
     }
+
+    set(ticketsAtom, updatedTickets);
+  }
+);
+
+// Batch update ticket orders for a group (used for manual reordering)
+export const reorderTicketsInGroupAtom = atom(
+  null,
+  (
+    get,
+    set,
+    {
+      groupValue,
+      orderedTicketIds,
+    }: {
+      groupValue: string;
+      orderedTicketIds: string[];
+    }
+  ) => {
+    const tickets = get(ticketsAtom);
+
+    const updatedTickets = tickets.map((ticket) => {
+      const newOrderIndex = orderedTicketIds.indexOf(ticket.id);
+      if (newOrderIndex !== -1) {
+        // This ticket is in the reordered group - update its order
+        return { ...ticket, order: newOrderIndex };
+      }
+      return ticket;
+    });
 
     set(ticketsAtom, updatedTickets);
   }

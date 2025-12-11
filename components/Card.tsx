@@ -65,6 +65,7 @@ function CardContent({
         "transition-all duration-150",
         "select-none"
       )}
+      data-testid={`ticket-card-${ticket.id}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-2">

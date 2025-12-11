@@ -157,7 +157,7 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
               {/* Metadata Grid */}
               <div className="grid grid-cols-2 gap-6 mb-6">
                 {/* Status */}
-                <div>
+                <div data-testid="status-field">
                   <FormLabel>Status</FormLabel>
                   <StatusDropdown
                     currentStatus={currentStatus}
@@ -167,7 +167,7 @@ export function NewTicketDialog({ open, onOpenChange }: NewTicketDialogProps) {
                 </div>
 
                 {/* Assignee */}
-                <div>
+                <div data-testid="assignee-field">
                   <FormLabel>Assignee</FormLabel>
                   <AssigneeDropdown
                     currentAssignee={selectedAssignee}

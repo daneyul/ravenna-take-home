@@ -76,7 +76,7 @@ function ColumnHeader({
           "ml-auto w-6 h-6 flex items-center justify-center rounded-sm hover:bg-stone-100 transition-colors duration-150 cursor-pointer bg-white",
           BUTTON_STYLES.base
         )}
-        aria-label="Sort by priority"
+        aria-label={sortDirection === null ? "Sort by priority" : `Sorted by priority (${sortDirection})`}
       >
         {sortDirection === "desc" ? <CaretDownIcon /> : <CaretUpIcon />}
       </button>
@@ -88,12 +88,21 @@ export function Column({ column, tickets, isOver = false, columnIndex }: ColumnP
   const groupBy = useAtomValue(groupByAtom);
   const [columnSort, setColumnSort] = useAtom(columnSortAtom);
 
-  const sortDirection = columnSort[column.id] || "asc";
+  const sortDirection = column.id in columnSort ? columnSort[column.id] : "asc";
 
   const handleSortClick = () => {
     setColumnSort((prev) => {
-      const currentSort = prev[column.id] || "asc";
-      const newSort: SortDirection = currentSort === "asc" ? "desc" : "asc";
+      const currentSort = prev[column.id];
+      let newSort: SortDirection;
+
+      // Cycle: null (manual) → asc → desc → asc
+      if (currentSort === null) {
+        newSort = "asc";
+      } else if (currentSort === "asc") {
+        newSort = "desc";
+      } else {
+        newSort = "asc";
+      }
 
       return {
         ...prev,
@@ -114,7 +123,7 @@ export function Column({ column, tickets, isOver = false, columnIndex }: ColumnP
   });
 
   return (
-    <div className="shrink-0 w-80 flex flex-col">
+    <div className="shrink-0 w-80 flex flex-col" data-testid={`column-${column.id}`}>
       <ColumnHeader
         column={column}
         groupBy={groupBy}
@@ -130,6 +139,7 @@ export function Column({ column, tickets, isOver = false, columnIndex }: ColumnP
           rounded-md transition-all duration-150
           ${isOver ? "bg-stone-100" : ""}
         `}
+        data-testid={`column-${column.id}-droppable`}
       >
         <SortableContext
           items={sortedTickets.map((t) => t.id)}

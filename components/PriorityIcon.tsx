@@ -35,7 +35,8 @@ function PriorityIconContent({
   priority: Priority;
   size?: "sm" | "md" | "lg";
 }) {
-  const sizeClass = size === "sm" ? "w-5 h-5" : size === "md" ? "w-6 h-6" : "w-7 h-7";
+  const sizeClass =
+    size === "sm" ? "w-5 h-5" : size === "md" ? "w-6 h-6" : "w-[38px] h-[38px]";
 
   if (priority === "none") {
     return (
@@ -122,7 +123,7 @@ export function PriorityIcon({
                 type="button"
                 onClick={() => handleChangePriority(option.value)}
                 className={clsx(
-                  "w-full px-2 py-1.5 text-sm flex items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
+                  "w-full px-2 py-1.5 text-sm flex cursor-pointer items-center gap-2 hover:bg-stone-100 rounded transition-colors duration-150",
                   isSelected && "bg-stone-50"
                 )}
               >

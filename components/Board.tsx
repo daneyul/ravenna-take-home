@@ -15,13 +15,16 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
+  columnSortAtom,
   groupByAtom,
   groupColumnsAtom,
+  reorderTicketsInGroupAtom,
   ticketsByGroupAtom,
   updateTicketGroupAtom,
 } from "@/atoms";
 import type { Ticket } from "@/types/ticket";
 import { COLUMN_TYPE, TICKET_TYPE } from "@/types/ticket";
+import { sortTicketsByPriority } from "@/utils/sorting";
 import { Card } from "./Card";
 import { Column } from "./Column";
 import { EmptyState } from "./EmptyState";
@@ -30,6 +33,9 @@ export function Board() {
   const groupColumns = useAtomValue(groupColumnsAtom);
   const ticketsByGroup = useAtomValue(ticketsByGroupAtom);
   const updateTicketGroup = useSetAtom(updateTicketGroupAtom);
+  const reorderTicketsInGroup = useSetAtom(reorderTicketsInGroupAtom);
+  const columnSort = useAtomValue(columnSortAtom);
+  const setColumnSort = useSetAtom(columnSortAtom);
   const groupBy = useAtomValue(groupByAtom);
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -134,10 +140,35 @@ export function Board() {
           newGroupValue = overTicket.status;
       }
 
-      const newOrder = overTicket.order;
+      // Calculate new order based on the position in the column
+      const ticketsInColumn = ticketsByGroup.get(newGroupValue) || [];
 
-      // Only reorder if position changed
-      if (currentGroupValue !== newGroupValue || ticket.order !== newOrder) {
+      // Apply the same sorting that the Column component uses to get visual order
+      const sortDirection = newGroupValue in columnSort ? columnSort[newGroupValue] : "asc";
+      const sortedTickets = sortTicketsByPriority(ticketsInColumn, sortDirection);
+
+      const overIndex = sortedTickets.findIndex((t) => t.id === overTicket.id);
+      const activeIndex = sortedTickets.findIndex((t) => t.id === ticketId);
+
+      if (currentGroupValue === newGroupValue) {
+        // Reordering within same column
+        // Only reorder if position actually changed
+        if (activeIndex !== overIndex) {
+          // Switch to manual ordering mode
+          setColumnSort((prev) => ({ ...prev, [newGroupValue]: null }));
+
+          // Get all tickets in their new visual order
+          const reorderedTickets = [...sortedTickets];
+          const [movedTicket] = reorderedTickets.splice(activeIndex, 1);
+          reorderedTickets.splice(overIndex, 0, movedTicket);
+
+          // Batch update all tickets in this column with sequential orders
+          const orderedTicketIds = reorderedTickets.map((t) => t.id);
+          reorderTicketsInGroup({ groupValue: newGroupValue, orderedTicketIds });
+        }
+      } else {
+        // Moving to different column - use the target ticket's order
+        const newOrder = overTicket.order;
         updateTicketGroup({ ticketId, groupValue: newGroupValue, newOrder });
       }
     }

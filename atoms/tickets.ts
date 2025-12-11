@@ -186,14 +186,8 @@ export const ticketsByGroupAtom = atom((get) => {
     grouped.set(groupKey, groupTickets);
   });
 
-  const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
-  grouped.forEach((tickets) => {
-    tickets.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      return a.order - b.order;
-    });
-  });
+  // Don't sort here - let the Column component handle sorting based on columnSort state
+  // This allows for both manual ordering (by ticket.order) and priority sorting
 
   return grouped;
 });
@@ -214,14 +208,8 @@ export const ticketsByStatusAtom = atom((get) => {
     grouped.set(ticket.status, statusTickets);
   });
 
-  const priorityOrder = { severe: 0, high: 1, medium: 2, low: 3, none: 4 };
-  grouped.forEach((tickets) => {
-    tickets.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      return a.order - b.order;
-    });
-  });
+  // Don't sort here - let the Column component handle sorting based on columnSort state
+  // This allows for both manual ordering (by ticket.order) and priority sorting
 
   return grouped;
 });
