@@ -5,5 +5,5 @@ export const BORDER_STYLES = {
 } as const;
 
 export const BUTTON_STYLES = {
-  base: "border border-stone-200 shadow-xs hover:border-stone-300",
+  base: "border border-stone-300 shadow-xs",
 } as const;

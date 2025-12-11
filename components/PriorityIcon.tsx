@@ -106,7 +106,7 @@ export function PriorityIcon({
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="inline-flex bg-white items-center transition-all duration-150 opacity-80 hover:opacity-100 hover:shadow-xs cursor-pointer"
+          className="inline-flex bg-white items-center transition-all duration-150 hover:shadow-xs cursor-pointer"
           onClick={onClick}
         >
           {content}
