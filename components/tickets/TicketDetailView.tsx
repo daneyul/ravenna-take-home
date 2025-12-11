@@ -218,6 +218,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
             },
           }}
         >
+          <DetailLabel>Title</DetailLabel>
           <motion.div
             className="flex items-center gap-2 mb-6"
             variants={{
