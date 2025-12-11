@@ -19,7 +19,7 @@ import {
   ticketFiltersAtom,
 } from "@/atoms";
 import { BORDER_STYLES, BUTTON_STYLES } from "@/lib/styles";
-import { getStatusColor } from "@/utils/status";
+import { getStatusColor, mapValueToStatusId } from "@/utils/status";
 import Button from "./Button";
 import { ProgressRing } from "./ProgressRing";
 
@@ -34,6 +34,15 @@ const LABEL_COLORS = [
   "#6366f1", // indigo
 ];
 
+const FILTER_STATUS_WAITING_FOR_VENDOR = "waiting-for-vendor";
+const FILTER_STATUS_WAITING_FOR_REQUESTER = "waiting-for-requester";
+
+const STATUS_NEW = "new";
+const STATUS_IN_PROGRESS = "in-progress";
+const STATUS_WAITING_VENDOR = "waiting-vendor";
+const STATUS_WAITING_REQUESTER = "waiting-requester";
+const STATUS_DONE = "done";
+
 interface SelectItemWrapperProps {
   value: string;
   label: string;
@@ -42,14 +51,14 @@ interface SelectItemWrapperProps {
 
 function getStatusProgressStyle(statusId: string) {
   switch (statusId) {
-    case "new":
+    case STATUS_NEW:
       return { fill: 0, dashed: true };
-    case "in-progress":
+    case STATUS_IN_PROGRESS:
       return { fill: 50, dashed: false };
-    case "waiting-vendor":
-    case "waiting-requester":
+    case STATUS_WAITING_VENDOR:
+    case STATUS_WAITING_REQUESTER:
       return { fill: 50, dashed: false };
-    case "done":
+    case STATUS_DONE:
       return { fill: 100, dashed: false };
     default:
       return { fill: 0, dashed: true };
@@ -57,14 +66,7 @@ function getStatusProgressStyle(statusId: string) {
 }
 
 function SelectItemWrapper({ value, label, color }: SelectItemWrapperProps) {
-  const statusId =
-    value === "all"
-      ? undefined
-      : value === "waiting-for-vendor"
-        ? "waiting-vendor"
-        : value === "waiting-for-requester"
-          ? "waiting-requester"
-          : value;
+  const statusId = value === "all" ? undefined : mapValueToStatusId(value);
   const progressStyle = statusId ? getStatusProgressStyle(statusId) : null;
 
   return (
@@ -279,12 +281,7 @@ export function FilterButton() {
                         filters.status &&
                         filters.status !== "all" &&
                         (() => {
-                          const statusId =
-                            filters.status === "waiting-for-vendor"
-                              ? "waiting-vendor"
-                              : filters.status === "waiting-for-requester"
-                                ? "waiting-requester"
-                                : filters.status;
+                          const statusId = mapValueToStatusId(filters.status);
                           const progressStyle = getStatusProgressStyle(statusId);
                           return (
                             <ProgressRing
@@ -317,29 +314,35 @@ export function FilterButton() {
                       <Select.Viewport className="p-1">
                         <SelectItemWrapper value="all" label="All statuses" />
                         <SelectItemWrapper
-                          value="new"
+                          value={STATUS_NEW}
                           label="New"
-                          color={getStatusColor("new", statuses)}
+                          color={getStatusColor(STATUS_NEW, statuses)}
                         />
                         <SelectItemWrapper
-                          value="in-progress"
+                          value={STATUS_IN_PROGRESS}
                           label="In Progress"
-                          color={getStatusColor("in-progress", statuses)}
+                          color={getStatusColor(STATUS_IN_PROGRESS, statuses)}
                         />
                         <SelectItemWrapper
-                          value="waiting-for-vendor"
+                          value={FILTER_STATUS_WAITING_FOR_VENDOR}
                           label="Waiting for Vendor"
-                          color={getStatusColor("waiting-for-vendor", statuses)}
+                          color={getStatusColor(
+                            FILTER_STATUS_WAITING_FOR_VENDOR,
+                            statuses
+                          )}
                         />
                         <SelectItemWrapper
-                          value="waiting-for-requester"
+                          value={FILTER_STATUS_WAITING_FOR_REQUESTER}
                           label="Waiting for Requester"
-                          color={getStatusColor("waiting-for-requester", statuses)}
+                          color={getStatusColor(
+                            FILTER_STATUS_WAITING_FOR_REQUESTER,
+                            statuses
+                          )}
                         />
                         <SelectItemWrapper
-                          value="done"
+                          value={STATUS_DONE}
                           label="Done"
-                          color={getStatusColor("done", statuses)}
+                          color={getStatusColor(STATUS_DONE, statuses)}
                         />
                       </Select.Viewport>
                     </Select.Content>

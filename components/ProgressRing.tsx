@@ -1,13 +1,8 @@
-/**
- * ProgressRing component
- * Renders a radial progress ring indicator
- */
-
 import { clsx } from "clsx";
 
 interface ProgressRingProps {
   color: string;
-  fill?: number; // 0-100
+  fill?: number;
   dashed?: boolean;
   size?: "sm" | "md";
 }
@@ -59,11 +54,10 @@ export function ProgressRing({
   return (
     <svg
       viewBox="0 0 16 16"
-      className={clsx(sizeClasses[size], "flex-shrink-0")}
+      className={clsx(sizeClasses[size], "shrink-0")}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Background circle (dashed for new, solid outline for others) */}
       <circle
         cx="8"
         cy="8"
@@ -74,11 +68,7 @@ export function ProgressRing({
         opacity={0.3}
         fill="none"
       />
-
-      {/* Radial fill (pie chart style) */}
       {fill > 0 && fill < 100 && <path d={getArcPath(fill)} fill={color} opacity={0.3} />}
-
-      {/* Solid fill for done status */}
       {fill === 100 && <circle cx="8" cy="8" r="6" fill={color} opacity={0.9} />}
     </svg>
   );
