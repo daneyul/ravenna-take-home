@@ -2,10 +2,7 @@ export {
   addLabelAtom,
   addTicketAtom,
   deleteTicketAtom,
-  reorderStatusesAtom,
-  reorderTicketsAtom,
   updateTicketAtom,
-  updateTicketStatusAtom,
 } from "./actions";
 export {
   filteredTicketsAtom,
@@ -18,7 +15,6 @@ export {
   groupColumnsAtom,
   reorderTicketsInGroupAtom,
   ticketsByGroupAtom,
-  ticketsByStatusAtom,
   updateTicketGroupAtom,
 } from "./grouping";
 export type { DataDensity, SortDirection } from "./state";

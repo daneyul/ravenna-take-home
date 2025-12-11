@@ -138,29 +138,6 @@ export const ticketsByGroupAtom = atom((get) => {
   return grouped;
 });
 
-// Legacy atom for backwards compatibility - now just filters by status
-export const ticketsByStatusAtom = atom((get) => {
-  const tickets = get(filteredTicketsAtom);
-  const statuses = get(statusesAtom);
-
-  const grouped = new Map<string, Ticket[]>();
-
-  statuses.forEach((status) => {
-    grouped.set(status.id, []);
-  });
-
-  tickets.forEach((ticket) => {
-    const statusTickets = grouped.get(ticket.status) || [];
-    statusTickets.push(ticket);
-    grouped.set(ticket.status, statusTickets);
-  });
-
-  // Don't sort here - let the Column component handle sorting based on columnSort state
-  // This allows for both manual ordering (by ticket.order) and priority sorting
-
-  return grouped;
-});
-
 // Update ticket based on grouping mode
 export const updateTicketGroupAtom = atom(
   null,
