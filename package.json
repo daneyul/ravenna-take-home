@@ -28,6 +28,7 @@
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
+    "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",
     "dnd-kit": "^0.0.2",
     "jotai": "^2.15.2",
